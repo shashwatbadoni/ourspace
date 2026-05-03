@@ -361,7 +361,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
     <div class="ntabs">
       <button class="ntab on" onclick="goPg('my',this)">Dashboard</button>
       <button class="ntab" onclick="goPg('family',this)">👨‍👩‍👦 Family</button>
-      <button class="ntab" onclick="goPg('bank',this)">🏦 Bank</button>
+      <button class="ntab" onclick="goPg('bank',this)">🏦 Bank <span id="bank-badge" style="display:none;background:#f87171;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;margin-left:2px">0</span></button>
       <button class="ntab" onclick="goPg('mood-parent',this)">😊 Mood</button>
     </div>
     <div class="nr">
@@ -604,18 +604,22 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
   <div id="pg-bank" class="pg">
     <div class="tc">
       <div>
+        <!-- Balance overview - read only -->
         <div class="bc">
           <div class="bbl">Ishaan's Piggy Bank 🐷</div>
           <div class="bba"><span class="bbcu">₹</span><span id="bbd">0</span></div>
-          <div class="bbs2">Available balance</div>
-          <div class="bact">
-            <button class="bb bbc2" onclick="openWD()">💸 Withdraw</button>
-            <button class="bb bbs3" onclick="openCA()">🏆 Achievement</button>
-          </div>
+          <div class="bbs2">Current balance</div>
         </div>
+        <!-- Pending approvals - main action area -->
         <div id="psec" style="display:none;margin-bottom:18px">
-          <div class="sl">Pending Approvals</div>
+          <div class="sl">⏳ Pending Approvals</div>
           <div id="pl2"></div>
+        </div>
+        <div id="psec-empty" style="margin-bottom:18px">
+          <div class="g pp" style="text-align:center;padding:24px">
+            <div style="font-size:36px;margin-bottom:8px">✅</div>
+            <div style="font-size:14px;color:var(--t2)">No pending approvals</div>
+          </div>
         </div>
         <div class="g pp">
           <div class="sl">Transaction History</div>
@@ -623,16 +627,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
         </div>
       </div>
       <div>
-        <div class="g pp" style="margin-bottom:16px">
-          <div class="sl">Earn Money</div>
-          <div class="ag">
-            <div class="ac" onclick="subAch('🎓','Pink Card at School',4000)"><span class="ae">🎓</span><div class="an">Pink Card</div><div class="aa">+₹4,000</div></div>
-            <div class="ac" onclick="subAch('🏠','Helping at Home',500)"><span class="ae">🏠</span><div class="an">Helping at Home</div><div class="aa">+₹500</div></div>
-            <div class="ac" onclick="subAch('📚','Reading a Book',200)"><span class="ae">📚</span><div class="an">Reading a Book</div><div class="aa">+₹200</div></div>
-            <div class="ac" onclick="openCA()"><span class="ae">✨</span><div class="an">Other</div><div class="aa">Custom</div></div>
-          </div>
-        </div>
-        <!-- SETTINGS -->
+        <!-- Settings -->
         <div class="g pp" style="margin-bottom:16px">
           <div class="sl">Settings</div>
           <div id="wal2">
@@ -996,8 +991,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
         <div class="hcl">I agree to the honour code ✓</div>
       </div>
     </div>
-    <button class="clb" id="clbtn" disabled onclick="claimNow()">💸 Claim Now (notify parents)</button>
-    <button class="bib" id="bibtn" disabled onclick="bankIt()">🏦 Bank It (save for later)</button>
+    <button class="clb" id="clbtn" disabled onclick="claimNow()">🎁 Claim Reward (ask parents)</button>
+    <button class="bib" id="bibtn" disabled onclick="bankIt()">🏦 Bank It (ask parents to save)</button>
   </div>
 </div>
 
@@ -1007,7 +1002,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
     <div style="font-size:13px;color:var(--t2);margin-bottom:12px">Available: ₹<span id="wdav">0</span></div>
     <input class="mi" id="wdamt" type="number" placeholder="Amount in ₹" min="1"/>
     <input class="mi" id="wdreason" placeholder="What's it for?"/>
-    <div style="font-size:12px;color:var(--t3);margin-bottom:10px;padding:8px;background:rgba(37,211,102,0.05);border-radius:6px">Your parents will get an email to approve this.</div>
+    <div style="font-size:12px;color:var(--t3);margin-bottom:10px;padding:8px;background:rgba(124,110,247,0.05);border-radius:6px">Your parents will approve this request in the app.</div>
     <div class="ma"><button class="mc" onclick="closeMo('mo-wd')">Cancel</button><button class="msv" onclick="subWD()">Request</button></div>
   </div>
 </div>
@@ -1090,9 +1085,12 @@ async function load() {
 
 // Real-time listener — updates UI when other device changes data
 function startSync() {
+  let firstLoad = true;
   onValue(ref(db, DB_REF), (snap) => {
     if (!snap.exists()) return;
     Object.assign(S, snap.val());
+    // Skip the very first fire (that's just the initial load)
+    if (firstLoad) { firstLoad = false; return; }
     if (role === 'parent') refreshParent();
     if (role === 'kid') refreshKid();
   });
@@ -1470,8 +1468,9 @@ function togKidTask(id) {
   if (!t) return;
   t.done = !t.done;
   save(); renderKidTasks(); renderKidTasksParent(); updateGameLock();
-  // check all done
-  if (S.kidTasks.length && S.kidTasks.every(t => t.done)) {
+  // Check if all tasks are now done
+  const allDone = S.kidTasks.length > 0 && S.kidTasks.every(t => t.done);
+  if (allDone) {
     setTimeout(() => openRewardModal(), 400);
   }
 }
@@ -1515,13 +1514,14 @@ function renderKidTasksParent() {
 function updateGameLock() {
   const done = S.kidTasks.filter(t => t.done).length;
   const total = S.kidTasks.length;
+  const allDone = total > 0 && done === total;
   const pct = total ? Math.round(done/total*100) : 0;
   const locked = document.getElementById('game-locked');
   const unlocked = document.getElementById('game-unlocked');
   const prog = document.getElementById('game-prog');
   const pctEl = document.getElementById('game-pct');
-  if (locked) locked.style.display = (pct < 100 || !total) ? 'block' : 'none';
-  if (unlocked) unlocked.style.display = (pct >= 100 && total > 0) ? 'block' : 'none';
+  if (locked) locked.style.display = allDone ? 'none' : 'block';
+  if (unlocked) unlocked.style.display = allDone ? 'block' : 'none';
   if (prog) prog.style.width = pct + '%';
   if (pctEl) pctEl.textContent = pct + '%';
 }
@@ -1575,21 +1575,31 @@ function togHonour() {
 }
 
 function claimNow() {
-  toast('Parents notified! Reward claim sent 🎉', 'ok');
+  // Goes to pending approvals for parent to approve
+  S.pendingApprovals.push({
+    id: uid(),
+    label: S.reward.emoji + ' Reward claim: ' + S.reward.name,
+    amt: S.reward.val,
+    type: 'reward',
+    date: Date.now()
+  });
   closeMo('mo-reward');
-  S.kidTasks.forEach(t => t.done = false);
-  save(); renderKidTasks(); renderKidTasksParent(); updateGameLock();
+  save(); renderBank(); updateBankBadge();
+  toast('Sent to parents for approval! 🎉', 'ok');
 }
 
 function bankIt() {
-  const amt = S.reward.val;
-  S.bank += amt; S.bankTotalEarned += amt;
-  S.bankTxs.unshift({id:uid(), label:'Reward banked: '+S.reward.name, amt, type:'in', date:Date.now()});
-  save(); renderKidBank(); renderBank();
+  // Also goes to pending approvals — parent approves before money is added
+  S.pendingApprovals.push({
+    id: uid(),
+    label: S.reward.emoji + ' Bank reward: ' + S.reward.name,
+    amt: S.reward.val,
+    type: 'bank',
+    date: Date.now()
+  });
   closeMo('mo-reward');
-  toast('₹' + amt + ' banked! 🐷', 'ok');
-  S.kidTasks.forEach(t => t.done = false);
-  save(); renderKidTasks(); renderKidTasksParent(); updateGameLock();
+  save(); renderBank(); updateBankBadge();
+  toast('Sent to parents for approval! 🐷', 'ok');
 }
 
 // ── BANK ─────────────────────────────────────────────────────────────────────
@@ -1606,7 +1616,20 @@ function renderKidBank() {
   }
 }
 
+function updateBankBadge() {
+  const count = (S.pendingApprovals || []).length;
+  const badge = document.getElementById('bank-badge');
+  if (!badge) return;
+  if (count > 0) {
+    badge.style.display = 'inline';
+    badge.textContent = count;
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
 function renderBank() {
+  updateBankBadge();
   document.getElementById('bbd').textContent = S.bank;
   document.getElementById('bte').textContent = S.bankTotalEarned;
   document.getElementById('btw').textContent = S.bankTotalWithdrawn;
@@ -1630,10 +1653,13 @@ function renderTxList(elId) {
 
 function renderPending() {
   const el = document.getElementById('psec');
+  const emptyEl = document.getElementById('psec-empty');
   const pl = document.getElementById('pl2');
-  if (!el || !pl) return;
-  el.style.display = S.pendingApprovals.length ? 'block' : 'none';
-  pl.innerHTML = S.pendingApprovals.map(p => `
+  if (!pl) return;
+  const hasPending = S.pendingApprovals && S.pendingApprovals.length > 0;
+  if (el) el.style.display = hasPending ? 'block' : 'none';
+  if (emptyEl) emptyEl.style.display = hasPending ? 'none' : 'block';
+  if (pl) pl.innerHTML = (S.pendingApprovals||[]).map(p => `
     <div class="api">
       <div class="aph"><span class="apt">${p.label}</span><span class="apa">₹${p.amt}</span></div>
       <div class="apac">
@@ -1657,11 +1683,27 @@ function subWD() {
 function approveWD(id) {
   const p = S.pendingApprovals.find(x => x.id === id);
   if (!p) return;
-  S.bank -= p.amt; S.bankTotalWithdrawn += p.amt;
-  S.bankTxs.unshift({id:uid(), label:p.label, amt:p.amt, type:'out', date:Date.now()});
+  // Add money to bank for bank-type rewards and withdrawals
+  if (p.type === 'bank') {
+    S.bank += p.amt;
+    S.bankTotalEarned += p.amt;
+    S.bankTxs.unshift({id:uid(), label:p.label, amt:p.amt, type:'in', date:Date.now()});
+  } else if (p.type === 'reward') {
+    // Claim reward — just log it, no money added
+    S.bankTxs.unshift({id:uid(), label:p.label, amt:p.amt, type:'out', date:Date.now()});
+  } else {
+    // Regular withdrawal
+    S.bank -= p.amt;
+    S.bankTotalWithdrawn += p.amt;
+    S.bankTxs.unshift({id:uid(), label:p.label, amt:p.amt, type:'out', date:Date.now()});
+  }
   S.pendingApprovals = S.pendingApprovals.filter(x => x.id !== id);
-  save(); renderBank(); renderKidBank();
-  showApprovalBanner('Withdrawal of ₹'+p.amt+' approved! 🎉');
+  // Reset kid tasks for the new week after reward approval
+  if (p.type === 'reward' || p.type === 'bank') {
+    S.kidTasks.forEach(t => t.done = false);
+  }
+  save(); renderBank(); renderKidBank(); renderKidTasks(); renderKidTasksParent(); updateGameLock();
+  showApprovalBanner('Approved! ✓');
   toast('Approved ✓', 'ok');
 }
 
@@ -2190,7 +2232,8 @@ window.openRewardModal = openRewardModal;
 window.togHonour = togHonour;
 window.claimNow = claimNow;
 window.bankIt = bankIt;
-window.openWD = openWD;
+window.updateBankBadge = updateBankBadge;
+window.renderBank = renderBank;
 window.subWD = subWD;
 window.approveWD = approveWD;
 window.rejectWD = rejectWD;
