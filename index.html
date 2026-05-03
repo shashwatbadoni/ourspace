@@ -2153,37 +2153,83 @@ function drawSnake() {
   });
 }
 
+
 // ── EXPOSE ALL FUNCTIONS TO WINDOW (required for type="module") ──────────────
-const _expose = [
-  'loginAs','doSignOut','showParentPin','hideParentPin','checkParentPin','goPg','goKidPg','goTab','goFamTab',
-  'addTask','togTask','delTask',
-  'addHabit','togHabit',
-  'openNote','closeNote','saveNote','delNote',
-  'openRemMo','saveRem','togRem','chMo',
-  'addBill','togBill',
-  'logEnergy',
-  'addIT','togKidTask','resetWeek',
-  'selR','setCustomR','saveReward','openRewardModal','togHonour','claimNow','bankIt',
-  'openWD','subWD','approveWD','rejectWD','openCA','subCA','subAch',
-  'unlockWA','lockWA','saveWA','savePIN','unlockPC','lockPC',
-  'selMood','togMoodCat','saveMood',
-  'setSavingsGoal',
-  'handlePhoto','savePhoto','viewPhoto',
-  'setBookRating','addBook',
-  'addGrocery','togGrocery',
-  'addFamGoal','togFamGoal',
-  'openMo','closeMo',
-  'showGame','startQuiz','answerQ',
-  'startSnake','stopSnake','setSnakeDir',
-];
-_expose.forEach(fn => { if (typeof window[fn] === 'undefined') try { window[fn] = eval(fn); } catch(e){} });
+window.loginAs = loginAs;
+window.doSignOut = doSignOut;
+window.showParentPin = showParentPin;
+window.hideParentPin = hideParentPin;
+window.checkParentPin = checkParentPin;
+window.goPg = goPg;
+window.goKidPg = goKidPg;
+window.goTab = goTab;
+window.goFamTab = goFamTab;
+window.addTask = addTask;
+window.togTask = togTask;
+window.delTask = delTask;
+window.addHabit = addHabit;
+window.togHabit = togHabit;
+window.openNote = openNote;
+window.closeNote = closeNote;
+window.saveNote = saveNote;
+window.delNote = delNote;
+window.openRemMo = openRemMo;
+window.saveRem = saveRem;
+window.togRem = togRem;
+window.chMo = chMo;
+window.addBill = addBill;
+window.togBill = togBill;
+window.logEnergy = logEnergy;
+window.addIT = addIT;
+window.togKidTask = togKidTask;
+window.resetWeek = resetWeek;
+window.selR = selR;
+window.setCustomR = setCustomR;
+window.saveReward = saveReward;
+window.openRewardModal = openRewardModal;
+window.togHonour = togHonour;
+window.claimNow = claimNow;
+window.bankIt = bankIt;
+window.openWD = openWD;
+window.subWD = subWD;
+window.approveWD = approveWD;
+window.rejectWD = rejectWD;
+window.openCA = openCA;
+window.subCA = subCA;
+window.subAch = subAch;
+window.unlockWA = unlockWA;
+window.lockWA = lockWA;
+window.saveWA = saveWA;
+window.savePIN = savePIN;
+window.unlockPC = unlockPC;
+window.lockPC = lockPC;
+window.selMood = selMood;
+window.togMoodCat = togMoodCat;
+window.saveMood = saveMood;
+window.setSavingsGoal = setSavingsGoal;
+window.handlePhoto = handlePhoto;
+window.savePhoto = savePhoto;
+window.viewPhoto = viewPhoto;
+window.setBookRating = setBookRating;
+window.addBook = addBook;
+window.addGrocery = addGrocery;
+window.togGrocery = togGrocery;
+window.addFamGoal = addFamGoal;
+window.togFamGoal = togFamGoal;
+window.openMo = openMo;
+window.closeMo = closeMo;
+window.showGame = showGame;
+window.startQuiz = startQuiz;
+window.answerQ = answerQ;
+window.startSnake = startSnake;
+window.stopSnake = stopSnake;
+window.setSnakeDir = setSnakeDir;
 
 // ── INIT ─────────────────────────────────────────────────────────────────────
 document.getElementById('ls').style.display = 'flex';
 document.getElementById('db-parent').style.display = 'none';
 document.getElementById('db-kid').style.display = 'none';
 
-// Show a loading state on the buttons while we connect
 const btns = document.querySelectorAll('#ls button');
 btns.forEach(b => { b.disabled = true; b.style.opacity = '0.6'; });
 
