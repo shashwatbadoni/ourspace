@@ -1021,7 +1021,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-import { getFirestore, doc, setDoc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-database.js";
 
 // ── FIREBASE CONFIG ───────────────────────────────────────────────────────
 const firebaseConfig = {
@@ -1030,12 +1030,13 @@ const firebaseConfig = {
   projectId: "ourspace-cf8c3",
   storageBucket: "ourspace-cf8c3.firebasestorage.app",
   messagingSenderId: "939308961153",
-  appId: "1:939308961153:web:ae9622d89979b59c55ac80"
+  appId: "1:939308961153:web:ae9622d89979b59c55ac80",
+  databaseURL: "https://ourspace-cf8c3-default-rtdb.asia-southeast1.firebasedatabase.app"
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const DB_DOC = 'family/ourspace';
+const db = getDatabase(app);
+const DB_REF = 'ourspace';
 
 // ── STATE ──────────────────────────────────────────────────────────────────
 let role = null;
@@ -1057,36 +1058,29 @@ const S = {
 
 let saveTimeout = null;
 function save() {
-  // Debounce saves to avoid hammering Firestore
   clearTimeout(saveTimeout);
   saveTimeout = setTimeout(async () => {
     try {
       const data = JSON.parse(JSON.stringify(S));
-      // Remove non-serialisable fields
       delete data.calMonth; delete data.calYear;
       delete data.moodCats; delete data.selectedMood; delete data.bookRating;
-      await setDoc(doc(db, 'family', 'ourspace'), data);
+      await set(ref(db, DB_REF), data);
     } catch(e) { console.error('Save error', e); }
   }, 600);
 }
 
 async function load() {
   try {
-    const snap = await getDoc(doc(db, 'family', 'ourspace'));
-    if (snap.exists()) {
-      const data = snap.data();
-      Object.assign(S, data);
-    }
+    const snap = await get(ref(db, DB_REF));
+    if (snap.exists()) Object.assign(S, snap.val());
   } catch(e) { console.error('Load error', e); }
 }
 
 // Real-time listener — updates UI when other device changes data
 function startSync() {
-  onSnapshot(doc(db, 'family', 'ourspace'), (snap) => {
+  onValue(ref(db, DB_REF), (snap) => {
     if (!snap.exists()) return;
-    const data = snap.data();
-    Object.assign(S, data);
-    // Re-render whatever page is active
+    Object.assign(S, snap.val());
     if (role === 'parent') refreshParent();
     if (role === 'kid') refreshKid();
   });
