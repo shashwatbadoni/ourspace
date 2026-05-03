@@ -1072,25 +1072,38 @@ function save() {
       delete data.calMonth; delete data.calYear;
       delete data.moodCats; delete data.selectedMood; delete data.bookRating;
       await set(ref(db, DB_REF), data);
-    } catch(e) { console.error('Save error', e); }
+    } catch(e) { console.error('Save error', e); toast('Sync error', 'err'); }
   }, 600);
+}
+
+// Firebase returns arrays as objects {0:..., 1:...} — fix them
+function fixArrays(data) {
+  const arrays = ['tasks','habits','notes','reminders','bills','kidTasks','bankTxs','pendingApprovals','photos','books','grocery','famGoals'];
+  arrays.forEach(key => {
+    if (data[key] && !Array.isArray(data[key])) {
+      data[key] = Object.values(data[key]);
+    }
+    if (!data[key]) data[key] = [];
+  });
+  return data;
 }
 
 async function load() {
   try {
     const snap = await get(ref(db, DB_REF));
-    if (snap.exists()) Object.assign(S, snap.val());
+    if (snap.exists()) {
+      const data = fixArrays(snap.val());
+      Object.assign(S, data);
+    }
   } catch(e) { console.error('Load error', e); }
 }
 
-// Real-time listener — updates UI when other device changes data
+// Real-time listener — fires every time ANY device saves
 function startSync() {
-  let firstLoad = true;
   onValue(ref(db, DB_REF), (snap) => {
     if (!snap.exists()) return;
-    Object.assign(S, snap.val());
-    // Skip the very first fire (that's just the initial load)
-    if (firstLoad) { firstLoad = false; return; }
+    const data = fixArrays(snap.val());
+    Object.assign(S, data);
     if (role === 'parent') refreshParent();
     if (role === 'kid') refreshKid();
   });
@@ -1100,12 +1113,18 @@ function refreshParent() {
   renderTasks(); renderHabits(); renderNotes(); renderReminders();
   renderCal(); renderKidTasksParent(); renderBank(); renderBills();
   renderGrocery(); renderFamGoals(); renderParentMood(); renderEnergyChart();
-  updateParentStats(); updateKidReward();
+  updateParentStats(); updateKidReward(); updateBankBadge();
 }
 
 function refreshKid() {
   renderKidTasks(); renderKidBank(); renderMoodCalKid();
   renderPhotos(); renderBooks(); updateKidReward(); updateGameLock();
+  const streakEl = document.getElementById('kid-streak');
+  if (streakEl) streakEl.textContent = '🔥 ' + (S.streak||0) + ' week streak';
+  // Show badge on game tab if games unlocked
+  const allDone = S.kidTasks.length > 0 && S.kidTasks.every(t => t.done);
+  const gameTab = document.getElementById('game-tab');
+  if (gameTab) gameTab.textContent = allDone ? '🎮 Game 🔓' : '🎮 Game';
 }
 
 // ── UTILS ───────────────────────────────────────────────────────────────────
@@ -1190,8 +1209,11 @@ function initKid() {
   document.getElementById('kid-greeting').textContent = 'Hey Ishaan! 🌟';
   renderKidTasks(); renderKidBank(); renderMoodCalKid(); renderPhotos();
   renderBooks(); updateKidReward(); updateGameLock();
-  // set streak
-  document.getElementById('kid-streak').textContent = '🔥 ' + (S.streak||0) + ' week streak';
+  const streakEl = document.getElementById('kid-streak');
+  if (streakEl) streakEl.textContent = '🔥 ' + (S.streak||0) + ' week streak';
+  const allDone = S.kidTasks.length > 0 && S.kidTasks.every(t => t.done);
+  const gameTab = document.getElementById('game-tab');
+  if (gameTab) gameTab.textContent = allDone ? '🎮 Game 🔓' : '🎮 Game';
 }
 
 // ── NAV ──────────────────────────────────────────────────────────────────────
@@ -1467,11 +1489,10 @@ function togKidTask(id) {
   const t = S.kidTasks.find(x => x.id === id);
   if (!t) return;
   t.done = !t.done;
+  const allDone = S.kidTasks.length > 0 && S.kidTasks.every(x => x.done);
   save(); renderKidTasks(); renderKidTasksParent(); updateGameLock();
-  // Check if all tasks are now done
-  const allDone = S.kidTasks.length > 0 && S.kidTasks.every(t => t.done);
-  if (allDone) {
-    setTimeout(() => openRewardModal(), 400);
+  if (allDone && t.done) {
+    setTimeout(() => openRewardModal(), 500);
   }
 }
 
@@ -1479,17 +1500,23 @@ function renderKidTasks() {
   const el = document.getElementById('kid-task-list');
   if (!el) return;
   if (!S.kidTasks.length) { el.innerHTML = '<div class="es">No tasks yet — check back soon!</div>'; return; }
-  el.innerHTML = S.kidTasks.map(t => `
+  // Show pending first, done at bottom
+  const sorted = [...S.kidTasks].sort((a,b) => (a.done===b.done)?0:a.done?1:-1);
+  el.innerHTML = sorted.map(t => `
     <div class="titem ${t.done?'dn':''}">
       <div class="ck ${t.done?'on':''}" onclick="togKidTask('${t.id}')">
         <svg class="cksv" width="10" height="8" viewBox="0 0 10 8"><path d="M1 4l3 3 5-6" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>
       </div>
       <span class="tt">${t.text}</span>
+      ${t.done ? '<span style="font-size:11px;color:var(--ok)">✓ Done</span>' : ''}
     </div>`).join('');
   const done = S.kidTasks.filter(t => t.done).length;
-  const pct = S.kidTasks.length ? Math.round(done / S.kidTasks.length * 100) : 0;
-  document.getElementById('kid-prog').style.width = pct + '%';
-  document.getElementById('kid-pct').textContent = pct + '%';
+  const total = S.kidTasks.length;
+  const pct = total ? Math.round(done/total*100) : 0;
+  const progEl = document.getElementById('kid-prog');
+  const pctEl = document.getElementById('kid-pct');
+  if (progEl) progEl.style.width = pct + '%';
+  if (pctEl) pctEl.textContent = pct + '%';
 }
 
 function renderKidTasksParent() {
