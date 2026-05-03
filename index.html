@@ -331,13 +331,25 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-h
   <div class="lc">
     <div class="ll">OurSpace ✦</div>
     <div class="ls2">Your family productivity dashboard.<br/>Sign in to get started.</div>
-        <div style="display:flex;flex-direction:column;gap:10px;width:100%">
-      <button onclick="loginAs('parent')" class="gbtn" style="background:linear-gradient(135deg,#7c6ef7,#a78bfa);color:#fff;font-size:15px">
+    <div style="display:flex;flex-direction:column;gap:10px;width:100%">
+      <button onclick="showParentPin()" class="gbtn" style="background:linear-gradient(135deg,#7c6ef7,#a78bfa);color:#fff;font-size:15px">
         👨‍👩‍👦 Sign in as Parent
       </button>
       <button onclick="loginAs('kid')" class="gbtn" style="background:linear-gradient(135deg,#38bdf8,#7c6ef7);color:#fff;font-size:15px">
         ⭐ Sign in as Ishaan (Kid)
       </button>
+    </div>
+    <!-- Parent PIN entry (hidden by default) -->
+    <div id="parent-pin-box" style="display:none;margin-top:16px;width:100%">
+      <div style="font-size:13px;color:var(--t2);margin-bottom:10px;text-align:center">Enter Parent PIN</div>
+      <div style="display:flex;gap:8px;justify-content:center">
+        <input id="login-pin" class="pi" type="password" maxlength="6" placeholder="PIN"
+          onkeydown="if(event.key==='Enter')checkParentPin()"
+          style="width:120px;text-align:center;letter-spacing:6px;font-size:20px"/>
+        <button onclick="checkParentPin()" class="pub">Go</button>
+      </div>
+      <div id="login-pin-err" style="display:none;font-size:12px;color:var(--err);text-align:center;margin-top:8px">Incorrect PIN</div>
+      <button onclick="hideParentPin()" style="background:transparent;border:none;color:var(--t3);font-size:12px;cursor:pointer;margin-top:10px;width:100%">← Back</button>
     </div>
   </div>
 </div>
@@ -1120,6 +1132,31 @@ function greet() {
 }
 
 // ── LOGIN ────────────────────────────────────────────────────────────────────
+function showParentPin() {
+  document.getElementById('parent-pin-box').style.display = 'block';
+  document.querySelectorAll('#ls .gbtn').forEach(b => b.style.display = 'none');
+  setTimeout(() => document.getElementById('login-pin').focus(), 100);
+}
+
+function hideParentPin() {
+  document.getElementById('parent-pin-box').style.display = 'none';
+  document.getElementById('login-pin').value = '';
+  document.getElementById('login-pin-err').style.display = 'none';
+  document.querySelectorAll('#ls .gbtn').forEach(b => b.style.display = 'flex');
+}
+
+function checkParentPin() {
+  const pin = document.getElementById('login-pin').value;
+  if (pin === S.parentPIN) {
+    hideParentPin();
+    loginAs('parent');
+  } else {
+    document.getElementById('login-pin-err').style.display = 'block';
+    document.getElementById('login-pin').value = '';
+    setTimeout(() => document.getElementById('login-pin-err').style.display = 'none', 2000);
+  }
+}
+
 function loginAs(r) {
   role = r;
   document.getElementById('ls').style.display = 'none';
@@ -2118,7 +2155,7 @@ function drawSnake() {
 
 // ── EXPOSE ALL FUNCTIONS TO WINDOW (required for type="module") ──────────────
 const _expose = [
-  'loginAs','doSignOut','goPg','goKidPg','goTab','goFamTab',
+  'loginAs','doSignOut','showParentPin','hideParentPin','checkParentPin','goKidPg','goTab','goFamTab',
   'addTask','togTask','delTask',
   'addHabit','togHabit',
   'openNote','closeNote','saveNote','delNote',
