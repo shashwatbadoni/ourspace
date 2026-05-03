@@ -1,0 +1,2167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="theme-color" content="#0d0f1a"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="OurSpace"/>
+<title>OurSpace — Family Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0d0f1a;--glass:rgba(255,255,255,0.06);--gb:rgba(255,255,255,0.12);
+  --a:#7c6ef7;--a2:#a78bfa;--a3:#38bdf8;
+  --ok:#34d399;--warn:#fbbf24;--err:#f87171;--gold:#f59e0b;--gold2:#f97316;
+  --t1:#f0f2ff;--t2:#a0a8c8;--t3:#5a6080;--r:14px;--rs:8px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;overflow-x:hidden}
+.orbs{position:fixed;inset:0;pointer-events:none;z-index:0}
+.orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:0.18}
+.o1{width:520px;height:520px;background:#7c6ef7;top:-120px;left:-100px}
+.o2{width:400px;height:400px;background:#38bdf8;bottom:-80px;right:-60px}
+.o3{width:280px;height:280px;background:#a78bfa;top:40%;left:60%}
+.app{position:relative;z-index:1;min-height:100vh}
+
+/* LOGIN */
+#ls{display:flex;align-items:center;justify-content:center;min-height:100vh}
+.lc{background:var(--glass);backdrop-filter:blur(24px);border:1px solid var(--gb);border-radius:24px;padding:48px 40px;text-align:center;max-width:380px;width:90%}
+.ll{font-family:'Syne',sans-serif;font-size:36px;font-weight:700;background:linear-gradient(135deg,#a78bfa,#38bdf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
+.ls2{font-size:14px;color:var(--t2);margin-bottom:32px;line-height:1.6}
+.gbtn{display:flex;align-items:center;justify-content:center;gap:12px;background:#fff;color:#1a1a2e;border:none;border-radius:10px;padding:13px 24px;font-size:15px;font-weight:600;cursor:pointer;width:100%;font-family:'DM Sans',sans-serif;transition:opacity 0.2s}
+.gbtn:hover{opacity:0.9}
+
+/* NAV */
+.nav{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:rgba(13,15,26,0.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--gb);position:sticky;top:0;z-index:100;gap:10px;flex-wrap:wrap}
+.nl{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;background:linear-gradient(135deg,#a78bfa,#38bdf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.ntabs{display:flex;gap:3px;background:rgba(0,0,0,0.3);border-radius:10px;padding:4px;flex-wrap:wrap}
+.ntab{padding:6px 12px;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;color:var(--t2);transition:all 0.2s;border:none;background:transparent;white-space:nowrap}
+.ntab.on{background:rgba(124,110,247,0.25);color:var(--a2);border:1px solid rgba(124,110,247,0.3)}
+.nr{display:flex;align-items:center;gap:8px}
+.av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#7c6ef7,#38bdf8);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#fff;overflow:hidden;flex-shrink:0}
+.av img{width:100%;height:100%;object-fit:cover}
+.sob{background:rgba(255,255,255,0.07);border:1px solid var(--gb);border-radius:8px;padding:5px 10px;color:var(--t2);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif}
+.sd{width:7px;height:7px;border-radius:50%;background:var(--ok);display:inline-block;margin-right:4px;vertical-align:middle}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.syn{animation:pulse 1s infinite}
+
+/* PAGES */
+.pg{display:none;padding:20px 24px}
+.pg.on{display:block}
+@media(max-width:768px){.pg{padding:12px}}
+.tc{display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start}
+@media(max-width:900px){.tc{grid-template-columns:1fr}}
+
+/* GLASS */
+.g{background:var(--glass);backdrop-filter:blur(24px);border:1px solid var(--gb);border-radius:var(--r)}
+.pp{padding:18px}
+.sl{font-family:'Syne',sans-serif;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin-bottom:12px}
+@keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.es{text-align:center;color:var(--t3);font-size:13px;padding:16px 0}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#1e2340;border:1px solid var(--gb);border-radius:10px;padding:12px 20px;font-size:13px;color:var(--t1);z-index:9999;opacity:0;transition:all 0.3s ease;pointer-events:none;white-space:nowrap;max-width:90vw}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.ok{border-color:rgba(52,211,153,0.4);color:var(--ok)}
+.toast.err{border-color:rgba(248,113,113,0.4);color:var(--err)}
+
+/* APPROVAL BANNER */
+.abanner{position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(135deg,#34d399,#059669);padding:14px 24px;text-align:center;transform:translateY(-100%);transition:transform 0.4s ease;display:flex;align-items:center;justify-content:center;gap:12px}
+.abanner.show{transform:translateY(0)}
+.abanner-text{font-size:14px;font-weight:600;color:#fff}
+.abanner-close{background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:4px 10px;color:#fff;font-size:12px;cursor:pointer}
+
+/* CONFETTI */
+.confetti-container{position:fixed;inset:0;pointer-events:none;z-index:9998;overflow:hidden}
+.cp{position:absolute;width:10px;height:10px;border-radius:2px;animation:cfall 3s ease-in forwards}
+@keyframes cfall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+
+/* INPUTS */
+.ti{background:rgba(0,0,0,0.3);border:1px solid var(--gb);border-radius:var(--rs);padding:9px 14px;color:var(--t1);font-family:'DM Sans',sans-serif;font-size:14px;outline:none}
+.ti::placeholder{color:var(--t3)}
+.ti:focus{border-color:rgba(124,110,247,0.5)}
+.ab{background:linear-gradient(135deg,#7c6ef7,#a78bfa);border:none;border-radius:var(--rs);padding:9px 16px;color:#fff;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap}
+.ab:hover{opacity:0.88}
+.row{display:flex;gap:8px;margin-bottom:12px}
+
+/* GREETING */
+.gr{padding:22px;margin-bottom:18px}
+.gr h1{font-family:'Syne',sans-serif;font-size:24px;font-weight:700;letter-spacing:-0.5px;margin-bottom:4px}
+.gr p{font-size:14px;color:var(--t2)}
+.grs{display:flex;gap:16px;margin-top:14px;flex-wrap:wrap}
+.gs{text-align:center;min-width:55px}
+.gn{font-family:'Syne',sans-serif;font-size:20px;font-weight:700}
+.gl{font-size:11px;color:var(--t2);margin-top:2px}
+.gn.pu{color:var(--a2)}.gn.bl{color:var(--a3)}.gn.gn2{color:var(--ok)}
+.pw{height:5px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;margin-top:10px}
+.pf{height:100%;border-radius:3px;background:linear-gradient(90deg,#7c6ef7,#38bdf8);transition:width 0.5s ease}
+
+/* INNER TABS */
+.it-bar{display:flex;gap:4px;padding:5px;background:rgba(0,0,0,0.25);border-radius:10px;margin-bottom:16px;flex-wrap:wrap}
+.it{flex:1;padding:7px 8px;border-radius:7px;font-size:12px;font-weight:500;text-align:center;cursor:pointer;color:var(--t2);transition:all 0.2s;border:none;background:transparent;min-width:60px}
+.it.on{background:rgba(124,110,247,0.25);color:var(--a2);border:1px solid rgba(124,110,247,0.3)}
+
+/* TASKS */
+.titem{display:flex;align-items:center;gap:12px;padding:11px 13px;background:rgba(0,0,0,0.2);border:1px solid var(--gb);border-radius:var(--rs);transition:all 0.2s;animation:fu 0.3s ease;margin-bottom:8px}
+.titem:hover{background:rgba(124,110,247,0.08);border-color:rgba(124,110,247,0.25)}
+.titem.dn{opacity:0.45}
+.titem.dn .tt{text-decoration:line-through;color:var(--t3)}
+.ck{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--t3);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s;cursor:pointer}
+.ck.on{background:linear-gradient(135deg,#7c6ef7,#38bdf8);border-color:transparent}
+.cksv{display:none}.ck.on .cksv{display:block}
+.tt{flex:1;font-size:14px}
+.pd{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.ph2{background:var(--err)}.pm{background:var(--warn)}.pl2{background:var(--ok)}
+.tdel{opacity:0;transition:opacity 0.15s;background:transparent;border:none;cursor:pointer;color:var(--t3);font-size:13px;padding:2px 6px}
+.titem:hover .tdel{opacity:1}
+
+/* HABITS */
+.hr{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.hn{font-size:12px;color:var(--t2);width:85px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hds{display:flex;gap:3px;flex:1}
+.hd{width:24px;height:24px;border-radius:5px;background:rgba(0,0,0,0.3);border:1px solid var(--gb);cursor:pointer;transition:all 0.18s;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--t3)}
+.hd.on{background:rgba(52,211,153,0.22);border-color:rgba(52,211,153,0.4);color:var(--ok)}
+.hd.td2{border-color:var(--a2)!important}
+.hp{font-size:11px;font-weight:600;min-width:30px;text-align:right}
+
+/* NOTES */
+.nc{padding:12px;background:rgba(0,0,0,0.2);border:1px solid var(--gb);border-radius:var(--rs);cursor:pointer;transition:background 0.2s;animation:fu 0.3s ease;margin-bottom:10px}
+.nc:hover{background:rgba(167,139,250,0.08)}
+.nt2{font-size:14px;font-weight:500;margin-bottom:4px}
+.np{font-size:12px;color:var(--t2);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.nm{font-size:11px;color:var(--t3);margin-top:6px}
+.nn{padding:12px;background:rgba(0,0,0,0.15);border:1px dashed var(--t3);border-radius:var(--rs);cursor:pointer;color:var(--t3);font-size:13px;text-align:center;transition:all 0.2s;margin-top:10px}
+.nn:hover{border-color:var(--a2);color:var(--a2)}
+.ne2{display:none;flex-direction:column;gap:8px;margin-bottom:12px}
+.ne2.on{display:flex}
+
+/* REMINDERS */
+.ri2{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:rgba(0,0,0,0.2);border:1px solid var(--gb);border-radius:var(--rs);animation:fu 0.3s ease;margin-bottom:8px}
+.ric{width:30px;height:30px;border-radius:7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px}
+.rpu{background:rgba(124,110,247,0.2)}.rbl{background:rgba(56,189,248,0.2)}.ram{background:rgba(251,191,36,0.2)}.rrd{background:rgba(248,113,113,0.18)}
+.rct{flex:1;min-width:0}
+.rtl{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rtm{font-size:11px;color:var(--t3);margin-top:2px}
+.rtg{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:500;margin-top:4px;display:inline-block}
+.tw2{background:rgba(124,110,247,0.18);color:var(--a2)}.th{background:rgba(52,211,153,0.15);color:var(--ok)}.tp{background:rgba(56,189,248,0.15);color:var(--a3)}.tu{background:rgba(248,113,113,0.15);color:var(--err)}
+.ri3{background:rgba(0,0,0,0.25);border:1px solid var(--gb);border-radius:var(--rs);padding:8px 11px;color:var(--t1);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;flex:1}
+.ri3:focus{border-color:rgba(124,110,247,0.4)}
+.rb{background:rgba(124,110,247,0.2);border:1px solid rgba(124,110,247,0.35);border-radius:var(--rs);padding:8px 13px;color:var(--a2);font-size:13px;font-weight:500;cursor:pointer}
+
+/* CALENDAR */
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.cm{font-family:'Syne',sans-serif;font-size:14px;font-weight:600}
+.cn2{display:flex;gap:4px}
+.cb{background:rgba(0,0,0,0.25);border:1px solid var(--gb);border-radius:6px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t2);font-size:12px}
+.cdh{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px}
+.cdn{font-size:9px;color:var(--t3);text-align:center;padding:2px 0;font-weight:500;text-transform:uppercase}
+.cg{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cc{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:5px;font-size:11px;cursor:pointer;transition:all 0.15s;color:var(--t2);position:relative}
+.cc:hover{background:rgba(124,110,247,0.15);color:var(--t1)}
+.cc.td3{background:linear-gradient(135deg,#7c6ef7,#a78bfa);color:#fff!important;font-weight:600}
+.cc.om{color:var(--t3);opacity:0.4}
+.cc.he::after{content:'';position:absolute;bottom:1px;left:50%;transform:translateX(-50%);width:3px;height:3px;border-radius:50%;background:var(--a3)}
+
+/* MODALS */
+.mo{display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.65);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:16px}
+.mo.on{display:flex}
+.md{background:#1a1e35;border:1px solid var(--gb);border-radius:var(--r);padding:22px;width:100%;max-width:440px;animation:fu 0.25s ease;max-height:90vh;overflow-y:auto}
+.mdt{font-family:'Syne',sans-serif;font-size:16px;font-weight:600;margin-bottom:14px}
+.mi{width:100%;background:rgba(0,0,0,0.3);border:1px solid var(--gb);border-radius:var(--rs);padding:10px 13px;color:var(--t1);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;margin-bottom:10px}
+.ms2{width:100%;background:rgba(0,0,0,0.3);border:1px solid var(--gb);border-radius:var(--rs);padding:10px 13px;color:var(--t1);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;margin-bottom:10px}
+.ms2 option{background:#1a1e35}
+.ma{display:flex;gap:8px;justify-content:flex-end;margin-top:4px}
+.mc{background:transparent;border:1px solid var(--gb);border-radius:var(--rs);padding:9px 18px;color:var(--t2);font-size:14px;cursor:pointer}
+.msv{background:linear-gradient(135deg,#7c6ef7,#a78bfa);border:none;border-radius:var(--rs);padding:9px 20px;color:#fff;font-size:14px;font-weight:500;cursor:pointer}
+
+/* PIN LOCK */
+.plock{text-align:center;padding:12px 0}
+.plock p{font-size:13px;color:var(--t2);margin-bottom:12px}
+.pi{background:rgba(0,0,0,0.3);border:1px solid var(--gb);border-radius:var(--rs);padding:9px 14px;color:var(--t1);font-family:'DM Sans',sans-serif;font-size:16px;outline:none;width:130px;letter-spacing:4px;text-align:center}
+.pi:focus{border-color:rgba(124,110,247,0.5)}
+.pub{background:rgba(124,110,247,0.2);border:1px solid rgba(124,110,247,0.35);border-radius:var(--rs);padding:9px 16px;color:var(--a2);font-size:13px;font-weight:600;cursor:pointer}
+.perr{font-size:12px;color:var(--err);margin-top:8px;display:none}
+
+/* KID HERO */
+.kid-hero{background:linear-gradient(135deg,rgba(124,110,247,0.15),rgba(56,189,248,0.1));border:1px solid rgba(124,110,247,0.2);border-radius:20px;padding:22px;text-align:center;margin-bottom:16px}
+.kid-hero h1{font-family:'Syne',sans-serif;font-size:24px;font-weight:700;margin-bottom:4px}
+.kid-hero p{font-size:13px;color:var(--t2);margin-bottom:12px}
+.streak-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.3);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:600;color:var(--warn)}
+.wpb{flex:1;height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden}
+.wpf{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width 0.5s ease}
+
+/* LEVEL BADGE */
+.level-badge{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,rgba(124,110,247,0.2),rgba(167,139,250,0.15));border:1px solid rgba(124,110,247,0.3);border-radius:20px;padding:8px 16px;margin:8px 0}
+.level-emoji{font-size:20px}
+.level-text{font-family:'Syne',sans-serif;font-size:13px;font-weight:600;color:var(--a2)}
+.level-next{font-size:11px;color:var(--t3);margin-top:2px}
+.level-progress{height:4px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;margin-top:6px}
+.level-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#7c6ef7,#a78bfa);transition:width 0.5s ease}
+
+/* MOOD TRACKER */
+.mood-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:12px}
+.mood-day{aspect-ratio:1;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;transition:all 0.15s;border:1px solid var(--gb);background:rgba(0,0,0,0.2);position:relative}
+.mood-day:hover{transform:scale(1.1)}
+.mood-day.today-mood{border:2px solid var(--a2)!important}
+.mood-day .day-num{position:absolute;bottom:1px;right:2px;font-size:9px;color:var(--t3)}
+.mood-emojis{display:flex;justify-content:space-around;padding:12px 0;gap:8px}
+.me{font-size:28px;cursor:pointer;transition:all 0.2s;filter:grayscale(50%);padding:8px;border-radius:12px;border:2px solid transparent}
+.me:hover,.me.selected{filter:none;transform:scale(1.2);border-color:var(--a2);background:rgba(124,110,247,0.15)}
+.mood-cat{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+.mcat{padding:6px 12px;border-radius:20px;font-size:12px;cursor:pointer;background:rgba(0,0,0,0.2);border:1px solid var(--gb);transition:all 0.2s;color:var(--t2)}
+.mcat.on{background:rgba(124,110,247,0.2);border-color:rgba(124,110,247,0.4);color:var(--a2)}
+.mood-chart{display:flex;align-items:flex-end;gap:4px;height:60px;margin:12px 0}
+.mood-bar{flex:1;border-radius:4px 4px 0 0;transition:height 0.5s ease;min-height:4px;position:relative}
+.mood-bar-label{position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--t3);white-space:nowrap}
+
+/* PHOTO WALL */
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.photo-item{aspect-ratio:1;border-radius:8px;overflow:hidden;cursor:pointer;position:relative;background:rgba(0,0,0,0.2);border:1px solid var(--gb)}
+.photo-item img{width:100%;height:100%;object-fit:cover;transition:transform 0.2s}
+.photo-item:hover img{transform:scale(1.05)}
+.photo-item .photo-date{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.7));padding:8px 6px 4px;font-size:10px;color:rgba(255,255,255,0.8)}
+.photo-item .mood-overlay{position:absolute;top:4px;right:4px;font-size:14px}
+.photo-upload{aspect-ratio:1;border-radius:8px;border:1px dashed var(--t3);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;background:rgba(0,0,0,0.1)}
+.photo-upload:hover{border-color:var(--a2);background:rgba(124,110,247,0.05)}
+.photo-upload span{font-size:24px;margin-bottom:4px}
+.photo-upload p{font-size:11px;color:var(--t3);text-align:center}
+
+/* READING LOG */
+.book-item{display:flex;align-items:center;gap:12px;padding:11px 13px;background:rgba(0,0,0,0.2);border:1px solid var(--gb);border-radius:var(--rs);margin-bottom:8px;animation:fu 0.3s ease}
+.book-cover{width:36px;height:48px;border-radius:4px;background:linear-gradient(135deg,var(--a),var(--a2));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.book-info{flex:1;min-width:0}
+.book-title{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.book-meta{font-size:11px;color:var(--t3);margin-top:2px}
+.book-stars{display:flex;gap:2px;margin-top:3px}
+.star{font-size:12px;cursor:pointer}
+
+/* BANK */
+.bc{background:linear-gradient(135deg,rgba(245,158,11,0.15),rgba(249,115,22,0.1));border:1px solid rgba(245,158,11,0.25);border-radius:20px;padding:22px;text-align:center;margin-bottom:18px;position:relative;overflow:hidden}
+.bc::before{content:'🏦';position:absolute;font-size:80px;opacity:0.06;right:-10px;top:-10px}
+.bbl{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:rgba(245,158,11,0.7);margin-bottom:6px}
+.bba{font-family:'Syne',sans-serif;font-size:44px;font-weight:700;color:var(--gold);line-height:1}
+.bbcu{font-size:22px;font-weight:400;vertical-align:super;margin-right:2px}
+.bbs2{font-size:13px;color:var(--t2);margin-top:6px}
+.bact{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.bb{border:none;border-radius:10px;padding:10px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:opacity 0.2s}
+.bb:hover{opacity:0.88}
+.bbc2{background:linear-gradient(135deg,#f59e0b,#f97316);color:#fff}
+.bbs3{background:linear-gradient(135deg,#34d399,#059669);color:#fff}
+.ag{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.ac{background:rgba(0,0,0,0.2);border:1px solid var(--gb);border-radius:10px;padding:12px;cursor:pointer;transition:all 0.2s;text-align:center}
+.ac:hover{background:rgba(245,158,11,0.08);border-color:rgba(245,158,11,0.3);transform:translateY(-1px)}
+.ae{font-size:22px;display:block;margin-bottom:4px}
+.an{font-size:12px;font-weight:500;margin-bottom:2px}
+.aa{font-size:13px;font-weight:700;color:var(--gold)}
+.ti2{display:flex;align-items:center;gap:12px;padding:11px 13px;background:rgba(0,0,0,0.2);border:1px solid var(--gb);border-radius:var(--rs);margin-bottom:8px;animation:fu 0.3s ease}
+.tic{width:32px;height:32px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.tin{background:rgba(52,211,153,0.15)}.tout{background:rgba(248,113,113,0.15)}
+.tit{flex:1;min-width:0}
+.titl{font-size:13px;font-weight:500}
+.titm{font-size:11px;color:var(--t3);margin-top:2px}
+.tia{font-size:13px;font-weight:700}
+.tia.in{color:var(--ok)}.tia.out{color:var(--err)}
+.api{background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:13px;margin-bottom:10px;animation:fu 0.3s ease}
+.aph{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.apt{font-size:13px;font-weight:500}
+.apa{font-size:15px;font-weight:700;color:var(--warn)}
+.apac{display:flex;gap:8px}
+.appr{background:rgba(52,211,153,0.15);border:1px solid rgba(52,211,153,0.3);border-radius:7px;padding:6px 12px;color:var(--ok);font-size:12px;font-weight:500;cursor:pointer}
+.aprj{background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.25);border-radius:7px;padding:6px 12px;color:var(--err);font-size:12px;font-weight:500;cursor:pointer}
+
+/* SAVINGS GOAL */
+.sg{background:linear-gradient(135deg,rgba(56,189,248,0.1),rgba(124,110,247,0.08));border:1px solid rgba(56,189,248,0.2);border-radius:var(--r);padding:14px;margin-bottom:14px}
+.sg-title{font-size:13px;font-weight:600;color:var(--a3);margin-bottom:6px}
+.sg-bar{height:6px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;margin:6px 0}
+.sg-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#38bdf8,#7c6ef7);transition:width 0.5s ease}
+.sg-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--t3)}
+
+/* REWARD MODAL */
+.rmd{background:#1a1e35;border:1px solid rgba(245,158,11,0.3);border-radius:20px;padding:24px;width:100%;max-width:400px;animation:fu 0.3s ease;text-align:center;max-height:90vh;overflow-y:auto}
+@keyframes bnc{from{transform:translateY(0)}to{transform:translateY(-8px)}}
+.hb{background:rgba(0,0,0,0.3);border:1px solid var(--gb);border-radius:10px;padding:13px;margin:14px 0;text-align:left}
+.ht{font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:10px;font-style:italic}
+.hcr{display:flex;align-items:center;gap:10px;cursor:pointer}
+.hck{width:20px;height:20px;border-radius:5px;border:1.5px solid var(--t3);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s}
+.hck.on{background:linear-gradient(135deg,#34d399,#059669);border-color:transparent}
+.hcl{font-size:13px;color:var(--t1);font-weight:500}
+.clb{background:linear-gradient(135deg,#f59e0b,#f97316);border:none;border-radius:10px;padding:12px 20px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;width:100%;transition:opacity 0.2s;margin-top:8px}
+.clb:disabled{opacity:0.35;cursor:not-allowed}
+.bib{background:linear-gradient(135deg,#34d399,#059669);border:none;border-radius:10px;padding:12px 20px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;width:100%;transition:opacity 0.2s;margin-top:8px}
+.bib:disabled{opacity:0.35;cursor:not-allowed}
+
+/* FAMILY FEATURES */
+.fam-list{display:flex;flex-direction:column;gap:8px}
+.fam-item{display:flex;align-items:center;gap:12px;padding:11px 13px;background:rgba(0,0,0,0.2);border:1px solid var(--gb);border-radius:var(--rs);animation:fu 0.3s ease}
+.fam-item.dn .fam-text{text-decoration:line-through;color:var(--t3);opacity:0.6}
+.fam-text{flex:1;font-size:14px}
+.fam-who{font-size:10px;color:var(--t3);padding:2px 6px;background:rgba(255,255,255,0.05);border-radius:4px}
+
+/* WA SETTINGS */
+.was{background:rgba(37,211,102,0.07);border:1px solid rgba(37,211,102,0.2);border-radius:10px;padding:13px;margin-bottom:10px}
+.wal{font-size:12px;color:rgba(37,211,102,0.8);font-weight:600;margin-bottom:5px}
+.wai{background:rgba(0,0,0,0.3);border:1px solid rgba(37,211,102,0.2);border-radius:var(--rs);padding:8px 11px;color:var(--t1);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;width:100%;margin-bottom:6px}
+.wasb{background:rgba(37,211,102,0.15);border:1px solid rgba(37,211,102,0.3);border-radius:var(--rs);padding:6px 14px;color:#25d366;font-size:13px;font-weight:600;cursor:pointer}
+
+/* PHOTO MODAL */
+.photo-modal-img{width:100%;border-radius:10px;margin-bottom:12px;max-height:300px;object-fit:cover}
+.ro{background:rgba(0,0,0,0.2);border:1px solid var(--gb);border-radius:10px;padding:10px;cursor:pointer;transition:all 0.2s;text-align:center}
+.ro:hover,.ro.on{background:rgba(251,191,36,0.1);border-color:rgba(251,191,36,0.4)}
+.roe{font-size:20px;display:block;margin-bottom:3px}
+.ron{font-size:12px;font-weight:500}
+.rop{font-size:10px;color:var(--t3);margin-top:1px}
+</style>
+</head>
+<body>
+<div class="orbs"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+<div class="confetti-container" id="confetti-container"></div>
+<div class="abanner" id="abanner">
+  <span style="font-size:18px">🎉</span>
+  <span class="abanner-text" id="abanner-text">Approved!</span>
+  <button class="abanner-close" onclick="document.getElementById('abanner').classList.remove('show')">✕</button>
+</div>
+<div class="toast" id="toast"></div>
+<div class="app">
+
+<!-- LOGIN -->
+<div id="ls">
+  <div class="lc">
+    <div class="ll">OurSpace ✦</div>
+    <div class="ls2">Your family productivity dashboard.<br/>Sign in to get started.</div>
+        <div style="display:flex;flex-direction:column;gap:10px;width:100%">
+      <button onclick="loginAs('parent')" class="gbtn" style="background:linear-gradient(135deg,#7c6ef7,#a78bfa);color:#fff;font-size:15px">
+        👨‍👩‍👦 Sign in as Parent
+      </button>
+      <button onclick="loginAs('kid')" class="gbtn" style="background:linear-gradient(135deg,#38bdf8,#7c6ef7);color:#fff;font-size:15px">
+        ⭐ Sign in as Ishaan (Kid)
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- PARENT DASHBOARD -->
+<div id="db-parent" style="display:none">
+  <nav class="nav">
+    <div class="nl">OurSpace</div>
+    <div class="ntabs">
+      <button class="ntab on" onclick="goPg('my',this)">Dashboard</button>
+      <button class="ntab" onclick="goPg('family',this)">👨‍👩‍👦 Family</button>
+      <button class="ntab" onclick="goPg('bank',this)">🏦 Bank</button>
+      <button class="ntab" onclick="goPg('mood-parent',this)">😊 Mood</button>
+    </div>
+    <div class="nr">
+      <span id="ss" style="font-size:11px;color:var(--t3)"><span class="sd"></span>Synced</span>
+      <button class="sob" onclick="doSignOut()">Sign out</button>
+      <div class="av" id="av-parent">P</div>
+    </div>
+  </nav>
+
+  <!-- MY PAGE -->
+  <div id="pg-my" class="pg on">
+    <div class="tc">
+      <div>
+        <div class="g gr">
+          <h1 id="gtx">Good morning ✦</h1>
+          <p id="gsb">Here's your day at a glance</p>
+          <div class="grs">
+            <div class="gs"><div class="gn pu" id="st">0</div><div class="gl">Tasks left</div></div>
+            <div class="gs"><div class="gn bl" id="sr">0</div><div class="gl">Reminders</div></div>
+            <div class="gs"><div class="gn gn2" id="sh">0%</div><div class="gl">Habits done</div></div>
+          </div>
+          <div class="pw"><div class="pf" id="op" style="width:0%"></div></div>
+        </div>
+        <div class="it-bar">
+          <button class="it on" onclick="goTab('tasks',this)">Tasks</button>
+          <button class="it" onclick="goTab('habits',this)">Habits</button>
+          <button class="it" onclick="goTab('notes',this)">Notes</button>
+          <button class="it" onclick="goTab('bills',this)">🔔 Bills</button>
+          <button class="it" onclick="goTab('energy',this)">⚡ Energy</button>
+        </div>
+        <div id="pt" class="g pp">
+          <div class="sl">Today's Tasks</div>
+          <div class="row">
+            <input class="ti" id="tinp" placeholder="Add a new task..." onkeydown="if(event.key==='Enter')addTask()" style="flex:1"/>
+            <select id="tpri" style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:9px 8px;color:#a0a8c8;font-size:12px;outline:none;cursor:pointer">
+              <option value="high">🔴 High</option><option value="med" selected>🟡 Med</option><option value="low">🟢 Low</option>
+            </select>
+            <button class="ab" onclick="addTask()">+ Add</button>
+          </div>
+          <div id="tl"></div>
+        </div>
+        <div id="ph3" class="g pp" style="display:none">
+          <div class="sl">Weekly Habits</div>
+          <div id="hg"></div>
+          <div class="row" style="margin-top:10px">
+            <input class="ti" id="hinp" placeholder="Add habit..." onkeydown="if(event.key==='Enter')addHabit()" style="flex:1"/>
+            <button class="ab" onclick="addHabit()">+ Add</button>
+          </div>
+        </div>
+        <div id="pn" class="g pp" style="display:none">
+          <div class="sl">Quick Notes</div>
+          <div class="ne2" id="ne2">
+            <input class="ti" id="nti" placeholder="Title..." style="width:100%"/>
+            <textarea class="ti" id="nbi" placeholder="What's on your mind?" style="width:100%;height:80px;resize:none;margin-top:4px"></textarea>
+            <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
+              <button class="mc" onclick="closeNote()">Cancel</button>
+              <button class="ab" onclick="saveNote()">Save</button>
+            </div>
+          </div>
+          <div id="nl2"></div>
+          <div class="nn" onclick="openNote()" id="nnb">+ New note</div>
+        </div>
+        <div id="pbills" class="g pp" style="display:none">
+          <div class="sl">Bill Reminders</div>
+          <div class="row">
+            <input class="ti" id="bill-name" placeholder="Bill name (e.g. Electricity)..." style="flex:1"/>
+            <input class="ti" id="bill-date" type="date" style="width:130px;flex:none"/>
+            <input class="ti" id="bill-amt" type="number" placeholder="₹" style="width:70px;flex:none"/>
+            <button class="ab" onclick="addBill()">+ Add</button>
+          </div>
+          <div id="bill-list"></div>
+        </div>
+        <div id="penergy" class="g pp" style="display:none">
+          <div class="sl">My Energy Today</div>
+          <div style="display:flex;justify-content:space-around;padding:12px 0">
+            <div style="text-align:center">
+              <div style="font-size:13px;color:var(--t2);margin-bottom:8px">Energy Level</div>
+              <div style="display:flex;gap:8px;justify-content:center">
+                <span onclick="logEnergy('low')" id="egy-low" style="font-size:24px;cursor:pointer;filter:grayscale(60%);padding:6px;border-radius:8px;border:2px solid transparent" title="Low">😴</span>
+                <span onclick="logEnergy('medium')" id="egy-med" style="font-size:24px;cursor:pointer;filter:grayscale(60%);padding:6px;border-radius:8px;border:2px solid transparent" title="Medium">😊</span>
+                <span onclick="logEnergy('high')" id="egy-hi" style="font-size:24px;cursor:pointer;filter:grayscale(60%);padding:6px;border-radius:8px;border:2px solid transparent" title="High">⚡</span>
+              </div>
+            </div>
+          </div>
+          <div class="sl" style="margin-top:8px">Energy This Week</div>
+          <div id="energy-chart" style="display:flex;align-items:flex-end;gap:6px;height:60px;margin-top:8px"></div>
+        </div>
+      </div>
+      <div>
+        <div class="g pp" style="margin-bottom:18px">
+          <div class="ch">
+            <div class="cm" id="clbl"></div>
+            <div class="cn2"><div class="cb" onclick="chMo(-1)">‹</div><div class="cb" onclick="chMo(1)">›</div></div>
+          </div>
+          <div class="cdh"><div class="cdn">Su</div><div class="cdn">Mo</div><div class="cdn">Tu</div><div class="cdn">We</div><div class="cdn">Th</div><div class="cdn">Fr</div><div class="cdn">Sa</div></div>
+          <div class="cg" id="cg"></div>
+        </div>
+        <div class="g pp">
+          <div class="sl">Upcoming</div>
+          <div id="rl"></div>
+          <div class="row" style="margin-top:10px">
+            <input class="ri3" id="rinp" placeholder="Add reminder..." onkeydown="if(event.key==='Enter')openRemMo()"/>
+            <button class="rb" onclick="openRemMo()">+ Add</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAMILY HUB PAGE -->
+  <div id="pg-family" class="pg">
+    <div class="it-bar" style="margin-bottom:20px">
+      <button class="it on" onclick="goFamTab('tasks',this)">📋 Tasks</button>
+      <button class="it" onclick="goFamTab('photos',this)">📸 Photos</button>
+      <button class="it" onclick="goFamTab('grocery',this)">🛒 Grocery</button>
+      <button class="it" onclick="goFamTab('goals',this)">🎯 Goals</button>
+    </div>
+    <!-- FAMILY TASKS -->
+    <div id="ft-tasks">
+      <div class="tc">
+        <div>
+          <div class="g pp" style="margin-bottom:18px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+              <div class="sl" style="margin-bottom:0">Ishaan's Weekly Tasks</div>
+              <span style="font-size:12px;color:var(--t2)" id="streak-display">🔥 0 week streak</span>
+            </div>
+            <div id="itl-parent"></div>
+          </div>
+          <!-- PARENT CONTROLS -->
+          <div class="g pp">
+            <div id="pcl">
+              <div class="plock">
+                <div style="font-size:24px;margin-bottom:8px">🔒</div>
+                <p>Enter parent PIN to manage tasks</p>
+                <div style="display:flex;gap:8px;justify-content:center">
+                  <input class="pi" id="pcpi" type="password" maxlength="6" placeholder="PIN" onkeydown="if(event.key==='Enter')unlockPC()"/>
+                  <button class="pub" onclick="unlockPC()">Unlock</button>
+                </div>
+                <div class="perr" id="pcpe">Incorrect PIN</div>
+              </div>
+            </div>
+            <div id="pcu" style="display:none">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+                <div style="font-size:12px;color:var(--ok)">🔓 Unlocked</div>
+                <button onclick="lockPC()" style="background:transparent;border:none;cursor:pointer;color:var(--t3);font-size:12px">Lock</button>
+              </div>
+              <div class="sl">Add Task for Ishaan</div>
+              <div class="row">
+                <input class="ti" id="itinp" placeholder="e.g. Clean your room..." style="flex:1" onkeydown="if(event.key==='Enter')addIT()"/>
+                <button class="ab" onclick="addIT()">+ Add</button>
+              </div>
+              <div class="sl" style="margin-top:14px">Set Reward</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px" id="ros">
+                <div class="ro on" onclick="selR(this,'🍦','Ice Cream','Any flavour, up to ₹300',300)"><span class="roe">🍦</span><div class="ron">Ice Cream</div><div class="rop">Up to ₹300</div></div>
+                <div class="ro" onclick="selR(this,'🍕','Pizza Lunch','Restaurant of choice, up to ₹800',800)"><span class="roe">🍕</span><div class="ron">Pizza Lunch</div><div class="rop">Up to ₹800</div></div>
+                <div class="ro" onclick="selR(this,'🎮','Gaming Voucher','Online store, up to ₹1000',1000)"><span class="roe">🎮</span><div class="ron">Gaming Voucher</div><div class="rop">Up to ₹1,000</div></div>
+                <div class="ro" onclick="selR(this,'🛍️','Shopping Trip','Buy something you like',1000)"><span class="roe">🛍️</span><div class="ron">Shopping Trip</div><div class="rop">Up to ₹1,000</div></div>
+              </div>
+              <div class="row">
+                <input class="ti" id="crn" placeholder="Custom reward..." style="flex:1"/>
+                <input class="ti" id="cre" placeholder="🎁" style="width:44px;flex:none"/>
+                <input class="ti" id="crv" placeholder="₹" style="width:60px;flex:none"/>
+                <button class="ab" onclick="setCustomR()" style="background:rgba(124,110,247,0.2);color:var(--a2);border:1px solid rgba(124,110,247,0.3)">Set</button>
+              </div>
+              <button class="ab" onclick="saveReward()" style="width:100%;padding:10px;margin-top:4px">💾 Save Reward</button>
+              <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--gb)">
+                <button onclick="resetWeek()" style="background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.2);border-radius:var(--rs);padding:7px 14px;color:var(--err);font-size:12px;cursor:pointer;width:100%">🔄 Reset Week</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="g pp" style="margin-bottom:16px">
+            <div class="sl">Progress</div>
+            <div style="text-align:center;padding:12px 0">
+              <div style="font-family:'Syne',sans-serif;font-size:44px;font-weight:700;color:var(--warn)" id="ibp">0%</div>
+              <div style="font-size:12px;color:var(--t2);margin-top:4px" id="itc">0 of 0 done</div>
+            </div>
+            <div style="height:6px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden">
+              <div class="wpf" id="ipf2" style="width:0%;height:100%;border-radius:3px"></div>
+            </div>
+          </div>
+          <div class="g pp" style="margin-bottom:16px">
+            <div class="sl">Reward</div>
+            <div style="text-align:center;padding:10px 0">
+              <div style="font-size:40px;margin-bottom:6px" id="rpe">🎁</div>
+              <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:600;color:var(--warn)" id="rpn">Set a reward!</div>
+              <div style="font-size:11px;color:var(--t2)" id="rps">Budget: ₹1,000</div>
+            </div>
+          </div>
+          <div class="g pp">
+            <div class="sl">Bank Balance</div>
+            <div style="text-align:center;padding:10px 0">
+              <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:700;color:var(--gold)">₹<span id="ibs">0</span></div>
+            </div>
+            <button onclick="goPg('bank',document.querySelectorAll('#db-parent .ntab')[2])" style="background:linear-gradient(135deg,rgba(245,158,11,0.15),rgba(249,115,22,0.1));border:1px solid rgba(245,158,11,0.25);border-radius:var(--rs);padding:8px 14px;color:var(--gold);font-size:12px;font-weight:500;cursor:pointer;width:100%;margin-top:4px">Go to Bank →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- FAMILY PHOTOS -->
+    <div id="ft-photos" style="display:none">
+      <div class="g pp">
+        <div class="sl">Ishaan's Photo Diary 📸</div>
+        <div class="photo-grid" id="parent-photo-grid"></div>
+        <div style="font-size:12px;color:var(--t3);text-align:center;margin-top:8px">Photos are added by Ishaan from his view</div>
+      </div>
+    </div>
+    <!-- GROCERY LIST -->
+    <div id="ft-grocery" style="display:none">
+      <div class="g pp">
+        <div class="sl">Grocery & Shopping List 🛒</div>
+        <div class="row">
+          <input class="ti" id="groc-inp" placeholder="Add item..." onkeydown="if(event.key==='Enter')addGrocery()" style="flex:1"/>
+          <select id="groc-who" style="background:rgba(0,0,0,0.3);border:1px solid var(--gb);border-radius:8px;padding:9px 8px;color:#a0a8c8;font-size:12px;outline:none;cursor:pointer">
+            <option value="family">👨‍👩‍👦 Family</option>
+            <option value="me">👤 Me</option>
+            <option value="ishaan">⭐ Ishaan</option>
+          </select>
+          <button class="ab" onclick="addGrocery()">+ Add</button>
+        </div>
+        <div id="grocery-list"></div>
+      </div>
+    </div>
+    <!-- FAMILY GOALS -->
+    <div id="ft-goals" style="display:none">
+      <div class="g pp">
+        <div class="sl">Family Goals 🎯</div>
+        <div class="row">
+          <input class="ti" id="goal-inp" placeholder="e.g. Holiday to Goa..." style="flex:1"/>
+          <input class="ti" id="goal-date" type="date" style="width:130px;flex:none"/>
+          <button class="ab" onclick="addFamGoal()">+ Add</button>
+        </div>
+        <div id="goal-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BANK PAGE -->
+  <div id="pg-bank" class="pg">
+    <div class="tc">
+      <div>
+        <div class="bc">
+          <div class="bbl">Ishaan's Piggy Bank 🐷</div>
+          <div class="bba"><span class="bbcu">₹</span><span id="bbd">0</span></div>
+          <div class="bbs2">Available balance</div>
+          <div class="bact">
+            <button class="bb bbc2" onclick="openWD()">💸 Withdraw</button>
+            <button class="bb bbs3" onclick="openCA()">🏆 Achievement</button>
+          </div>
+        </div>
+        <div id="psec" style="display:none;margin-bottom:18px">
+          <div class="sl">Pending Approvals</div>
+          <div id="pl2"></div>
+        </div>
+        <div class="g pp">
+          <div class="sl">Transaction History</div>
+          <div id="txl"><div class="es">No transactions yet</div></div>
+        </div>
+      </div>
+      <div>
+        <div class="g pp" style="margin-bottom:16px">
+          <div class="sl">Earn Money</div>
+          <div class="ag">
+            <div class="ac" onclick="subAch('🎓','Pink Card at School',4000)"><span class="ae">🎓</span><div class="an">Pink Card</div><div class="aa">+₹4,000</div></div>
+            <div class="ac" onclick="subAch('🏠','Helping at Home',500)"><span class="ae">🏠</span><div class="an">Helping at Home</div><div class="aa">+₹500</div></div>
+            <div class="ac" onclick="subAch('📚','Reading a Book',200)"><span class="ae">📚</span><div class="an">Reading a Book</div><div class="aa">+₹200</div></div>
+            <div class="ac" onclick="openCA()"><span class="ae">✨</span><div class="an">Other</div><div class="aa">Custom</div></div>
+          </div>
+        </div>
+        <!-- SETTINGS -->
+        <div class="g pp" style="margin-bottom:16px">
+          <div class="sl">Settings</div>
+          <div id="wal2">
+            <div class="plock">
+              <div style="font-size:22px;margin-bottom:6px">🔒</div>
+              <p>Parent PIN required</p>
+              <div style="display:flex;gap:8px;justify-content:center">
+                <input class="pi" id="wapi" type="password" maxlength="6" placeholder="PIN" onkeydown="if(event.key==='Enter')unlockWA()"/>
+                <button class="pub" onclick="unlockWA()">Unlock</button>
+              </div>
+              <div class="perr" id="wape">Incorrect PIN</div>
+            </div>
+          </div>
+          <div id="wau" style="display:none">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <div style="font-size:12px;color:var(--ok)">🔓 Unlocked</div>
+              <button onclick="lockWA()" style="background:transparent;border:none;cursor:pointer;color:var(--t3);font-size:12px">Lock</button>
+            </div>
+            <div class="was">
+              <div class="wal">📧 Parent 1 Email</div>
+              <input class="wai" id="wan1" placeholder="email@gmail.com"/>
+              <div class="wal" style="margin-top:6px">📧 Parent 2 Email</div>
+              <input class="wai" id="wan2" placeholder="email@gmail.com"/>
+              <button class="wasb" onclick="saveWA()">Save</button>
+            </div>
+            <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--gb)">
+              <div style="font-size:12px;color:var(--t3);margin-bottom:6px">Change Parent PIN</div>
+              <div style="display:flex;gap:8px">
+                <input id="npi" type="password" maxlength="6" placeholder="New PIN" style="background:rgba(0,0,0,0.3);border:1px solid var(--gb);border-radius:var(--rs);padding:7px 10px;color:var(--t1);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;flex:1;letter-spacing:3px;text-align:center"/>
+                <button class="wasb" onclick="savePIN()">Set</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="g pp">
+          <div class="sl">Bank Stats</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--gb)"><span style="font-size:13px;color:var(--t2)">Total Earned</span><span style="font-size:14px;font-weight:700;color:var(--ok)">₹<span id="bte">0</span></span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--gb)"><span style="font-size:13px;color:var(--t2)">Total Withdrawn</span><span style="font-size:14px;font-weight:700;color:var(--err)">₹<span id="btw">0</span></span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0"><span style="font-size:13px;color:var(--t2)">Pending</span><span style="font-size:14px;font-weight:700;color:var(--warn)">₹<span id="btp">0</span></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MOOD PARENT VIEW -->
+  <div id="pg-mood-parent" class="pg">
+    <div class="tc">
+      <div>
+        <div class="g pp" style="margin-bottom:18px">
+          <div class="sl">Ishaan's Mood Calendar</div>
+          <div class="mood-grid" id="mood-calendar-parent"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;font-size:12px;color:var(--t2)">
+            <span>😄 Great</span><span>😊 Good</span><span>😐 Ok</span><span>😟 Low</span><span>😢 Sad</span>
+          </div>
+        </div>
+        <div class="g pp">
+          <div class="sl">Mood Trend This Week</div>
+          <div class="mood-chart" id="mood-chart-parent"></div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--t3);margin-top:20px" id="mood-chart-labels"></div>
+        </div>
+      </div>
+      <div>
+        <div class="g pp" style="margin-bottom:16px">
+          <div class="sl">Recent Entries</div>
+          <div id="mood-entries-parent"></div>
+        </div>
+        <div class="g pp">
+          <div class="sl">Mood Summary</div>
+          <div id="mood-summary"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- KID DASHBOARD -->
+<div id="db-kid" style="display:none">
+  <nav class="nav">
+    <div class="nl">OurSpace ✦</div>
+    <div class="ntabs">
+      <button class="ntab on" onclick="goKidPg('tasks',this)">🌟 Tasks</button>
+      <button class="ntab" onclick="goKidPg('mood',this)">😊 Mood</button>
+      <button class="ntab" onclick="goKidPg('photos',this)">📸 Photos</button>
+      <button class="ntab" onclick="goKidPg('books',this)">📚 Books</button>
+      <button class="ntab" onclick="goKidPg('bank',this)">🏦 Bank</button>
+      <button class="ntab" id="game-tab" onclick="goKidPg('game',this)">🎮 Game</button>
+    </div>
+    <div class="nr">
+      <button class="sob" onclick="doSignOut()">Sign out</button>
+      <div class="av" id="av-kid">I</div>
+    </div>
+  </nav>
+
+  <!-- KID TASKS -->
+  <div id="kpg-tasks" class="pg on" style="max-width:600px;margin:0 auto">
+    <div class="kid-hero g">
+      <h1 id="kid-greeting">Hey Ishaan! 🌟</h1>
+      <p>Complete all your tasks to unlock your reward!</p>
+      <div class="level-badge" id="level-badge">
+        <span class="level-emoji">🥉</span>
+        <div>
+          <div class="level-text" id="level-text">Rookie</div>
+          <div class="level-next" id="level-next">5 more weeks to Explorer</div>
+        </div>
+      </div>
+      <div class="streak-badge" id="kid-streak" style="margin-left:8px">🔥 0 week streak</div>
+      <div style="display:flex;align-items:center;gap:12px;margin-top:14px">
+        <div class="wpb"><div class="wpf" id="kid-prog" style="width:0%"></div></div>
+        <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--warn);min-width:34px;text-align:right" id="kid-pct">0%</div>
+      </div>
+    </div>
+    <div style="background:linear-gradient(135deg,rgba(251,191,36,0.1),rgba(249,115,22,0.08));border:1px solid rgba(251,191,36,0.2);border-radius:var(--r);padding:13px 16px;margin:14px 0;display:flex;align-items:center;gap:12px">
+      <div style="font-size:26px;flex-shrink:0" id="kid-reward-emoji">🎁</div>
+      <div>
+        <div style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:rgba(251,191,36,0.7);margin-bottom:2px">This week's reward</div>
+        <div style="font-size:14px;font-weight:600;color:var(--warn)" id="kid-reward-name">Complete all tasks!</div>
+        <div style="font-size:11px;color:var(--t2);margin-top:1px" id="kid-reward-sub">Budget: ₹1,000</div>
+      </div>
+    </div>
+    <!-- SAVINGS GOAL -->
+    <div class="sg g" id="kid-sg-section" style="display:none">
+      <div class="sg-title">🎯 Savings Goal: <span id="sg-name">-</span></div>
+      <div class="sg-bar"><div class="sg-fill" id="sg-fill" style="width:0%"></div></div>
+      <div class="sg-labels"><span>₹<span id="sg-current">0</span> saved</span><span>₹<span id="sg-target">0</span> goal</span></div>
+    </div>
+    <div class="g pp">
+      <div class="sl">This Week's Challenges</div>
+      <div id="kid-task-list"><div class="es">No tasks yet — check back soon!</div></div>
+    </div>
+    <div class="g pp" style="margin-top:14px">
+      <div class="sl">My Savings Goal</div>
+      <div class="row">
+        <input class="ti" id="sg-name-inp" placeholder="What are you saving for?" style="flex:1"/>
+        <input class="ti" id="sg-amt-inp" type="number" placeholder="₹" style="width:70px;flex:none"/>
+        <button class="ab" onclick="setSavingsGoal()" style="background:rgba(56,189,248,0.2);color:var(--a3);border:1px solid rgba(56,189,248,0.3)">Set</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- KID MOOD -->
+  <div id="kpg-mood" class="pg" style="max-width:600px;margin:0 auto;display:none">
+    <div class="g pp" style="margin-bottom:16px">
+      <div class="sl">How are you feeling today? 😊</div>
+      <div style="font-size:12px;color:var(--t2);margin-bottom:12px">Evening check-in — tap how you're feeling</div>
+      <div class="mood-emojis" id="mood-picker">
+        <span class="me" onclick="selMood('great','😄')" data-mood="great">😄</span>
+        <span class="me" onclick="selMood('good','😊')" data-mood="good">😊</span>
+        <span class="me" onclick="selMood('ok','😐')" data-mood="ok">😐</span>
+        <span class="me" onclick="selMood('low','😟')" data-mood="low">😟</span>
+        <span class="me" onclick="selMood('sad','😢')" data-mood="sad">😢</span>
+      </div>
+      <div class="sl" style="margin-top:14px">What made you feel this way?</div>
+      <div class="mood-cat" id="mood-cats">
+        <div class="mcat" onclick="togMoodCat(this,'school')">🏫 School</div>
+        <div class="mcat" onclick="togMoodCat(this,'friends')">👫 Friends</div>
+        <div class="mcat" onclick="togMoodCat(this,'home')">🏠 Home</div>
+        <div class="mcat" onclick="togMoodCat(this,'health')">💊 Health</div>
+        <div class="mcat" onclick="togMoodCat(this,'sport')">⚽ Sport</div>
+        <div class="mcat" onclick="togMoodCat(this,'other')">✨ Other</div>
+      </div>
+      <div class="sl" style="margin-top:14px">Want to add a note? (optional)</div>
+      <textarea class="ti" id="mood-note" placeholder="Tell me more about your day..." style="width:100%;height:70px;resize:none;margin-bottom:10px"></textarea>
+      <button class="ab" onclick="saveMood()" style="width:100%;padding:11px">Save My Mood ✓</button>
+    </div>
+    <div class="g pp">
+      <div class="sl">My Mood This Week</div>
+      <div class="mood-grid" id="mood-calendar-kid"></div>
+    </div>
+  </div>
+
+  <!-- KID PHOTOS -->
+  <div id="kpg-photos" class="pg" style="max-width:600px;margin:0 auto;display:none">
+    <div class="g pp" style="margin-bottom:16px">
+      <div class="sl">Photo of the Day 📸</div>
+      <div style="font-size:13px;color:var(--t2);margin-bottom:12px">Capture something that made you happy today!</div>
+      <div style="margin-bottom:12px">
+        <input type="file" id="photo-input" accept="image/*" capture="environment" style="display:none" onchange="handlePhoto(event)"/>
+        <button class="ab" onclick="document.getElementById('photo-input').click()" style="width:100%;padding:12px;font-size:14px">📷 Take / Choose Photo</button>
+      </div>
+      <div id="photo-preview" style="display:none;margin-bottom:10px">
+        <img id="photo-preview-img" style="width:100%;border-radius:10px;max-height:250px;object-fit:cover"/>
+        <input class="ti" id="photo-caption" placeholder="Add a caption... (optional)" style="width:100%;margin-top:8px"/>
+        <button class="ab" onclick="savePhoto()" style="width:100%;padding:10px;margin-top:8px">Save Photo ✓</button>
+      </div>
+    </div>
+    <div class="g pp">
+      <div class="sl">My Photo Diary</div>
+      <div class="photo-grid" id="kid-photo-grid"></div>
+    </div>
+  </div>
+
+  <!-- KID BOOKS -->
+  <div id="kpg-books" class="pg" style="max-width:600px;margin:0 auto;display:none">
+    <div class="g pp" style="margin-bottom:16px">
+      <div class="sl">Add a Book 📚</div>
+      <div class="row">
+        <input class="ti" id="book-title-inp" placeholder="Book title..." style="flex:1"/>
+        <button class="ab" onclick="addBook()">+ Add</button>
+      </div>
+      <div class="row">
+        <input class="ti" id="book-author" placeholder="Author (optional)..." style="flex:1"/>
+        <div style="display:flex;gap:4px;align-items:center">
+          <span style="font-size:12px;color:var(--t2)">Rating:</span>
+          <div id="book-rating-stars" style="display:flex;gap:2px">
+            <span class="star" onclick="setBookRating(1)">⭐</span>
+            <span class="star" onclick="setBookRating(2)">⭐</span>
+            <span class="star" onclick="setBookRating(3)">⭐</span>
+            <span class="star" onclick="setBookRating(4)">⭐</span>
+            <span class="star" onclick="setBookRating(5)">⭐</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="g pp">
+      <div class="sl">Books I've Read</div>
+      <div id="book-list"><div class="es">No books yet — add your first one!</div></div>
+    </div>
+  </div>
+
+  <!-- KID BANK -->
+  <div id="kpg-bank" class="pg" style="max-width:600px;margin:0 auto;display:none">
+    <div class="bc">
+      <div class="bbl">My Piggy Bank 🐷</div>
+      <div class="bba"><span class="bbcu">₹</span><span id="kid-bal">0</span></div>
+      <div class="bbs2">My savings</div>
+      <div class="bact">
+        <button class="bb bbc2" onclick="openWD()">💸 Withdraw</button>
+        <button class="bb bbs3" onclick="openCA()">🏆 Achievement</button>
+      </div>
+    </div>
+    <div class="sg g" id="kid-sg-bank" style="display:none;margin-bottom:14px">
+      <div class="sg-title">🎯 Saving for: <span id="sg-name-bank">-</span></div>
+      <div class="sg-bar"><div class="sg-fill" id="sg-fill-bank" style="width:0%"></div></div>
+      <div class="sg-labels"><span>₹<span id="sg-cur-bank">0</span></span><span>₹<span id="sg-tgt-bank">0</span></span></div>
+    </div>
+    <div class="g pp" style="margin-bottom:14px">
+      <div class="sl">Earn Money</div>
+      <div class="ag">
+        <div class="ac" onclick="subAch('🎓','Pink Card at School',4000)"><span class="ae">🎓</span><div class="an">Pink Card</div><div class="aa">+₹4,000</div></div>
+        <div class="ac" onclick="subAch('🏠','Helping at Home',500)"><span class="ae">🏠</span><div class="an">Helping at Home</div><div class="aa">+₹500</div></div>
+        <div class="ac" onclick="subAch('📚','Reading a Book',200)"><span class="ae">📚</span><div class="an">Reading a Book</div><div class="aa">+₹200</div></div>
+        <div class="ac" onclick="openCA()"><span class="ae">✨</span><div class="an">Other</div><div class="aa">Custom</div></div>
+      </div>
+    </div>
+    <div class="g pp">
+      <div class="sl">Transactions</div>
+      <div id="kid-txl"><div class="es">No transactions yet</div></div>
+    </div>
+  </div>
+  <!-- KID GAME -->
+  <div id="kpg-game" class="pg" style="max-width:600px;margin:0 auto;display:none">
+    <div id="game-locked" class="g pp" style="text-align:center;padding:40px 20px">
+      <div style="font-size:52px;margin-bottom:12px">🔒</div>
+      <h2 style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;margin-bottom:8px;color:var(--a2)">Games Locked!</h2>
+      <p style="font-size:14px;color:var(--t2);line-height:1.6">Complete all your weekly tasks to unlock the games! 🌟</p>
+      <div style="margin-top:16px;display:flex;align-items:center;gap:10px;background:rgba(0,0,0,0.2);border-radius:10px;padding:12px 16px">
+        <div class="wpb"><div class="wpf" id="game-prog" style="width:0%"></div></div>
+        <div style="font-size:13px;font-weight:700;color:var(--warn)" id="game-pct">0%</div>
+      </div>
+    </div>
+    <div id="game-unlocked" style="display:none">
+      <!-- GAME PICKER -->
+      <div id="game-picker" class="g pp" style="margin-bottom:16px">
+        <div class="sl">Choose Your Game 🎮</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div onclick="showGame('quiz')" style="background:linear-gradient(135deg,rgba(124,110,247,0.15),rgba(167,139,250,0.1));border:1px solid rgba(124,110,247,0.3);border-radius:12px;padding:20px;text-align:center;cursor:pointer">
+            <div style="font-size:36px;margin-bottom:8px">🧠</div>
+            <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:var(--a2)">Quiz Game</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:3px">10 questions</div>
+          </div>
+          <div onclick="showGame('snake')" style="background:linear-gradient(135deg,rgba(52,211,153,0.15),rgba(5,150,105,0.1));border:1px solid rgba(52,211,153,0.3);border-radius:12px;padding:20px;text-align:center;cursor:pointer">
+            <div style="font-size:36px;margin-bottom:8px">🐍</div>
+            <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:var(--ok)">Snake Game</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:3px">Classic snake</div>
+          </div>
+        </div>
+      </div>
+      <!-- QUIZ -->
+      <div id="game-quiz" style="display:none">
+        <div class="g pp" style="margin-bottom:14px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <button onclick="showGame('picker')" style="background:rgba(0,0,0,0.2);border:1px solid var(--gb);border-radius:8px;padding:6px 12px;color:var(--t2);font-size:12px;cursor:pointer">← Back</button>
+            <div style="display:flex;gap:16px">
+              <div style="text-align:center"><div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--ok)" id="quiz-score">0</div><div style="font-size:10px;color:var(--t2)">Score</div></div>
+              <div style="text-align:center"><div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--warn)" id="quiz-qnum">1/10</div><div style="font-size:10px;color:var(--t2)">Question</div></div>
+              <div style="text-align:center"><div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--a3)" id="quiz-timer">15</div><div style="font-size:10px;color:var(--t2)">Secs</div></div>
+            </div>
+          </div>
+          <div id="quiz-area">
+            <div id="quiz-question" style="font-size:15px;font-weight:600;line-height:1.5;margin-bottom:16px;min-height:50px"></div>
+            <div id="quiz-options" style="display:flex;flex-direction:column;gap:8px"></div>
+            <div id="quiz-feedback" style="display:none;margin-top:12px;padding:11px;border-radius:10px;font-size:14px;font-weight:600;text-align:center"></div>
+          </div>
+          <div id="quiz-result" style="display:none;text-align:center;padding:20px 0">
+            <div style="font-size:44px;margin-bottom:10px" id="result-emoji">🎉</div>
+            <h2 style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--warn);margin-bottom:4px" id="result-title">Great job!</h2>
+            <p style="font-size:13px;color:var(--t2);margin-bottom:4px" id="result-score"></p>
+            <p style="font-size:12px;color:var(--t3)" id="result-msg"></p>
+            <button class="ab" onclick="startQuiz()" style="margin-top:14px;padding:11px 24px">🔄 Play Again</button>
+          </div>
+        </div>
+      </div>
+      <!-- SNAKE -->
+      <div id="game-snake" style="display:none">
+        <div class="g pp">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <button onclick="showGame('picker');stopSnake()" style="background:rgba(0,0,0,0.2);border:1px solid var(--gb);border-radius:8px;padding:6px 12px;color:var(--t2);font-size:12px;cursor:pointer">← Back</button>
+            <div style="display:flex;gap:16px">
+              <div style="text-align:center"><div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--ok)" id="snake-score">0</div><div style="font-size:10px;color:var(--t2)">Score</div></div>
+              <div style="text-align:center"><div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--warn)" id="snake-best">0</div><div style="font-size:10px;color:var(--t2)">Best</div></div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:center;margin-bottom:12px">
+            <canvas id="snake-canvas" width="300" height="300" style="border-radius:10px;border:1px solid var(--gb);background:#0a0d1a;touch-action:none"></canvas>
+          </div>
+          <div id="snake-msg" style="text-align:center;margin-bottom:10px;font-size:14px;color:var(--t2)">Tap Start to play!</div>
+          <button id="snake-start-btn" class="ab" onclick="startSnake()" style="width:100%;padding:11px">🐍 Start Game</button>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:12px;max-width:160px;margin-left:auto;margin-right:auto">
+            <div></div>
+            <button onclick="setSnakeDir(0,-1)" style="background:rgba(255,255,255,0.08);border:1px solid var(--gb);border-radius:8px;padding:10px;font-size:16px;cursor:pointer">▲</button>
+            <div></div>
+            <button onclick="setSnakeDir(-1,0)" style="background:rgba(255,255,255,0.08);border:1px solid var(--gb);border-radius:8px;padding:10px;font-size:16px;cursor:pointer">◀</button>
+            <button onclick="startSnake()" style="background:rgba(124,110,247,0.2);border:1px solid rgba(124,110,247,0.3);border-radius:8px;padding:10px;font-size:12px;cursor:pointer">GO</button>
+            <button onclick="setSnakeDir(1,0)" style="background:rgba(255,255,255,0.08);border:1px solid var(--gb);border-radius:8px;padding:10px;font-size:16px;cursor:pointer">▶</button>
+            <div></div>
+            <button onclick="setSnakeDir(0,1)" style="background:rgba(255,255,255,0.08);border:1px solid var(--gb);border-radius:8px;padding:10px;font-size:16px;cursor:pointer">▼</button>
+            <div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="mo" id="mo-rem">
+  <div class="md">
+    <div class="mdt">New Reminder</div>
+    <input class="mi" id="rm-t" placeholder="Reminder title"/>
+    <input class="mi" id="rm-d" type="datetime-local"/>
+    <select class="ms2" id="rm-tag"><option value="work">Work</option><option value="health">Health</option><option value="personal">Personal</option><option value="urgent">Urgent</option></select>
+    <div class="ma"><button class="mc" onclick="closeMo('mo-rem')">Cancel</button><button class="msv" onclick="saveRem()">Save</button></div>
+  </div>
+</div>
+
+<div class="mo" id="mo-reward">
+  <div class="rmd">
+    <div style="font-size:48px;margin-bottom:10px;animation:bnc 0.6s ease infinite alternate" id="rme">🎉</div>
+    <h2 style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;margin-bottom:6px;color:var(--warn)">You did it! 🏆</h2>
+    <p style="font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:14px">All tasks done! Choose what to do with your reward:</p>
+    <div style="background:linear-gradient(135deg,rgba(245,158,11,0.12),rgba(249,115,22,0.1));border:1px solid rgba(245,158,11,0.25);border-radius:10px;padding:12px;margin-bottom:12px">
+      <div style="font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:rgba(245,158,11,0.7);margin-bottom:4px">Your Reward</div>
+      <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--warn)" id="rmn">Ice Cream 🍦</div>
+      <div style="font-size:11px;color:var(--t2);margin-top:2px" id="rmsb">Up to ₹300</div>
+    </div>
+    <div class="hb">
+      <div style="font-size:11px;font-weight:600;color:var(--t2);margin-bottom:7px">✋ Honour Code</div>
+      <div class="ht">"I honestly completed all my tasks this week on my own. I deserve this reward."</div>
+      <div class="hcr" onclick="togHonour()">
+        <div class="hck" id="hck"></div>
+        <div class="hcl">I agree to the honour code ✓</div>
+      </div>
+    </div>
+    <button class="clb" id="clbtn" disabled onclick="claimNow()">💸 Claim Now (notify parents)</button>
+    <button class="bib" id="bibtn" disabled onclick="bankIt()">🏦 Bank It (save for later)</button>
+  </div>
+</div>
+
+<div class="mo" id="mo-wd">
+  <div class="md">
+    <div class="mdt">💸 Withdraw Money</div>
+    <div style="font-size:13px;color:var(--t2);margin-bottom:12px">Available: ₹<span id="wdav">0</span></div>
+    <input class="mi" id="wdamt" type="number" placeholder="Amount in ₹" min="1"/>
+    <input class="mi" id="wdreason" placeholder="What's it for?"/>
+    <div style="font-size:12px;color:var(--t3);margin-bottom:10px;padding:8px;background:rgba(37,211,102,0.05);border-radius:6px">Your parents will get an email to approve this.</div>
+    <div class="ma"><button class="mc" onclick="closeMo('mo-wd')">Cancel</button><button class="msv" onclick="subWD()">Request</button></div>
+  </div>
+</div>
+
+<div class="mo" id="mo-ca">
+  <div class="md">
+    <div class="mdt">✨ Custom Achievement</div>
+    <input class="mi" id="can" placeholder="Achievement name..."/>
+    <input class="mi" id="caa" type="number" placeholder="Amount in ₹" min="1"/>
+    <div class="ma"><button class="mc" onclick="closeMo('mo-ca')">Cancel</button><button class="msv" onclick="subCA()">Submit</button></div>
+  </div>
+</div>
+
+<div class="mo" id="mo-photo">
+  <div class="md">
+    <img id="modal-photo-img" class="photo-modal-img" src="" alt=""/>
+    <div style="font-size:14px;font-weight:500;margin-bottom:4px" id="modal-photo-caption"></div>
+    <div style="font-size:12px;color:var(--t3);margin-bottom:4px" id="modal-photo-date"></div>
+    <div style="font-size:20px" id="modal-photo-mood"></div>
+    <div class="ma"><button class="mc" onclick="closeMo('mo-photo')">Close</button></div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+import { getFirestore, doc, setDoc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+// ── FIREBASE CONFIG ───────────────────────────────────────────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyD3Ko6RW-A-CYN8SHHg56SJjLLcdUeVKas",
+  authDomain: "ourspace-cf8c3.firebaseapp.com",
+  projectId: "ourspace-cf8c3",
+  storageBucket: "ourspace-cf8c3.firebasestorage.app",
+  messagingSenderId: "939308961153",
+  appId: "1:939308961153:web:ae9622d89979b59c55ac80"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const DB_DOC = 'family/ourspace';
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+let role = null;
+const S = {
+  tasks: [], habits: [], notes: [], reminders: [], bills: [],
+  kidTasks: [], bank: 0, bankTxs: [], pendingApprovals: [],
+  bankTotalEarned: 0, bankTotalWithdrawn: 0,
+  reward: {emoji:'🍦', name:'Ice Cream', sub:'Any flavour, up to ₹300', val:300},
+  parentPIN: '1234',
+  mood: {}, energy: {},
+  photos: [], books: [],
+  grocery: [], famGoals: [],
+  streak: 0, weeksDone: 0,
+  savingsGoal: null,
+  calMonth: new Date().getMonth(), calYear: new Date().getFullYear(),
+  moodCats: [], selectedMood: null,
+  bookRating: 0,
+};
+
+let saveTimeout = null;
+function save() {
+  // Debounce saves to avoid hammering Firestore
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(async () => {
+    try {
+      const data = JSON.parse(JSON.stringify(S));
+      // Remove non-serialisable fields
+      delete data.calMonth; delete data.calYear;
+      delete data.moodCats; delete data.selectedMood; delete data.bookRating;
+      await setDoc(doc(db, 'family', 'ourspace'), data);
+    } catch(e) { console.error('Save error', e); }
+  }, 600);
+}
+
+async function load() {
+  try {
+    const snap = await getDoc(doc(db, 'family', 'ourspace'));
+    if (snap.exists()) {
+      const data = snap.data();
+      Object.assign(S, data);
+    }
+  } catch(e) { console.error('Load error', e); }
+}
+
+// Real-time listener — updates UI when other device changes data
+function startSync() {
+  onSnapshot(doc(db, 'family', 'ourspace'), (snap) => {
+    if (!snap.exists()) return;
+    const data = snap.data();
+    Object.assign(S, data);
+    // Re-render whatever page is active
+    if (role === 'parent') refreshParent();
+    if (role === 'kid') refreshKid();
+  });
+}
+
+function refreshParent() {
+  renderTasks(); renderHabits(); renderNotes(); renderReminders();
+  renderCal(); renderKidTasksParent(); renderBank(); renderBills();
+  renderGrocery(); renderFamGoals(); renderParentMood(); renderEnergyChart();
+  updateParentStats(); updateKidReward();
+}
+
+function refreshKid() {
+  renderKidTasks(); renderKidBank(); renderMoodCalKid();
+  renderPhotos(); renderBooks(); updateKidReward(); updateGameLock();
+}
+
+// ── UTILS ───────────────────────────────────────────────────────────────────
+function toast(msg, type='ok') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast ' + type;
+  setTimeout(() => t.classList.add('show'), 10);
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+function fmtDate(d) {
+  return new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+}
+
+function greet() {
+  const h = new Date().getHours();
+  if (h < 12) return 'Good morning';
+  if (h < 17) return 'Good afternoon';
+  return 'Good evening';
+}
+
+// ── LOGIN ────────────────────────────────────────────────────────────────────
+function loginAs(r) {
+  role = r;
+  document.getElementById('ls').style.display = 'none';
+  if (r === 'parent') {
+    document.getElementById('db-parent').style.display = 'block';
+    initParent();
+  } else {
+    document.getElementById('db-kid').style.display = 'block';
+    initKid();
+  }
+}
+window.loginAs = loginAs;
+
+function doSignOut() {
+  role = null;
+  document.getElementById('db-parent').style.display = 'none';
+  document.getElementById('db-kid').style.display = 'none';
+  document.getElementById('ls').style.display = 'flex';
+}
+window.doSignOut = doSignOut;
+
+// ── PARENT INIT ──────────────────────────────────────────────────────────────
+function initParent() {
+  document.getElementById('gtx').textContent = greet() + ' ✦';
+  renderTasks(); renderHabits(); renderNotes(); renderReminders();
+  renderCal(); renderKidTasksParent(); renderBank(); renderBills();
+  renderGrocery(); renderFamGoals(); renderParentMood(); renderEnergyChart();
+  updateParentStats();
+}
+
+// ── KID INIT ─────────────────────────────────────────────────────────────────
+function initKid() {
+  document.getElementById('kid-greeting').textContent = 'Hey Ishaan! 🌟';
+  renderKidTasks(); renderKidBank(); renderMoodCalKid(); renderPhotos();
+  renderBooks(); updateKidReward(); updateGameLock();
+  // set streak
+  document.getElementById('kid-streak').textContent = '🔥 ' + (S.streak||0) + ' week streak';
+}
+
+// ── NAV ──────────────────────────────────────────────────────────────────────
+function goPg(id, btn) {
+  document.querySelectorAll('#db-parent .pg').forEach(p => p.classList.remove('on'));
+  document.getElementById('pg-' + id).classList.add('on');
+  document.querySelectorAll('#db-parent .ntab').forEach(b => b.classList.remove('on'));
+  if (btn) btn.classList.add('on');
+}
+
+function goKidPg(id, btn) {
+  document.querySelectorAll('#db-kid .pg, #db-kid [id^="kpg-"]').forEach(p => {
+    p.classList.remove('on');
+    if (p.id && p.id.startsWith('kpg-')) p.style.display = 'none';
+  });
+  const pg = document.getElementById('kpg-' + id);
+  if (pg) { pg.style.display = 'block'; pg.classList.add('on'); }
+  document.querySelectorAll('#db-kid .ntab').forEach(b => b.classList.remove('on'));
+  if (btn) btn.classList.add('on');
+}
+
+function goTab(id, btn) {
+  const map = {tasks:'pt', habits:'ph3', notes:'pn', bills:'pbills', energy:'penergy'};
+  Object.values(map).forEach(v => document.getElementById(v).style.display = 'none');
+  document.getElementById(map[id]).style.display = 'block';
+  document.querySelectorAll('.it-bar .it').forEach(b => b.classList.remove('on'));
+  if (btn) btn.classList.add('on');
+}
+
+function goFamTab(id, btn) {
+  ['tasks','photos','grocery','goals'].forEach(t => {
+    document.getElementById('ft-' + t).style.display = t === id ? 'block' : 'none';
+  });
+  document.querySelectorAll('#pg-family .it').forEach(b => b.classList.remove('on'));
+  if (btn) btn.classList.add('on');
+}
+
+// ── TASKS (PARENT) ───────────────────────────────────────────────────────────
+function addTask() {
+  const inp = document.getElementById('tinp');
+  const pri = document.getElementById('tpri').value;
+  const txt = inp.value.trim();
+  if (!txt) return;
+  S.tasks.push({id:uid(), text:txt, done:false, pri, created:Date.now()});
+  inp.value = '';
+  save(); renderTasks(); updateParentStats();
+}
+
+function togTask(id) {
+  const t = S.tasks.find(x => x.id === id);
+  if (t) { t.done = !t.done; save(); renderTasks(); updateParentStats(); }
+}
+
+function delTask(id) {
+  S.tasks = S.tasks.filter(x => x.id !== id);
+  save(); renderTasks(); updateParentStats();
+}
+
+function renderTasks() {
+  const el = document.getElementById('tl');
+  if (!S.tasks.length) { el.innerHTML = '<div class="es">No tasks yet — add one above!</div>'; return; }
+  el.innerHTML = S.tasks.map(t => `
+    <div class="titem ${t.done?'dn':''}">
+      <div class="ck ${t.done?'on':''}" onclick="togTask('${t.id}')">
+        <svg class="cksv" width="10" height="8" viewBox="0 0 10 8"><path d="M1 4l3 3 5-6" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>
+      </div>
+      <div class="pd p${t.pri==='high'?'h2':t.pri==='med'?'m':'l2'}"></div>
+      <span class="tt">${t.text}</span>
+      <button class="tdel" onclick="delTask('${t.id}')">✕</button>
+    </div>`).join('');
+}
+
+function updateParentStats() {
+  const left = S.tasks.filter(t => !t.done).length;
+  const rem = S.reminders.filter(r => !r.done).length;
+  const habPct = S.habits.length ? Math.round(S.habits.filter(h => {
+    const today = new Date().getDay(); return h.days && h.days[today];
+  }).length / S.habits.length * 100) : 0;
+  document.getElementById('st').textContent = left;
+  document.getElementById('sr').textContent = rem;
+  document.getElementById('sh').textContent = habPct + '%';
+  const done = S.tasks.filter(t => t.done).length;
+  const pct = S.tasks.length ? Math.round(done / S.tasks.length * 100) : 0;
+  document.getElementById('op').style.width = pct + '%';
+}
+
+// ── HABITS ───────────────────────────────────────────────────────────────────
+function addHabit() {
+  const inp = document.getElementById('hinp');
+  const txt = inp.value.trim();
+  if (!txt) return;
+  S.habits.push({id:uid(), name:txt, days:{}});
+  inp.value = '';
+  save(); renderHabits();
+}
+
+function togHabit(hid, day) {
+  const h = S.habits.find(x => x.id === hid);
+  if (h) { if (!h.days) h.days = {}; h.days[day] = !h.days[day]; save(); renderHabits(); }
+}
+
+function renderHabits() {
+  const el = document.getElementById('hg');
+  const days = ['S','M','T','W','T','F','S'];
+  if (!S.habits.length) { el.innerHTML = '<div class="es">No habits yet</div>'; return; }
+  el.innerHTML = S.habits.map(h => `
+    <div class="hr">
+      <div class="hn">${h.name}</div>
+      <div class="hds">${days.map((d,i) => `
+        <div class="hd ${h.days&&h.days[i]?'on':''} ${i===new Date().getDay()?'td2':''}" onclick="togHabit('${h.id}',${i})">${d}</div>
+      `).join('')}</div>
+      <div class="hp" style="color:var(--ok)">${Object.values(h.days||{}).filter(Boolean).length}/7</div>
+    </div>`).join('');
+}
+
+// ── NOTES ────────────────────────────────────────────────────────────────────
+function openNote() { document.getElementById('ne2').classList.add('on'); document.getElementById('nnb').style.display='none'; }
+function closeNote() { document.getElementById('ne2').classList.remove('on'); document.getElementById('nnb').style.display='block'; document.getElementById('nti').value=''; document.getElementById('nbi').value=''; }
+
+function saveNote() {
+  const title = document.getElementById('nti').value.trim();
+  const body = document.getElementById('nbi').value.trim();
+  if (!title && !body) return;
+  S.notes.unshift({id:uid(), title:title||'Untitled', body, created:Date.now()});
+  save(); renderNotes(); closeNote();
+}
+
+function delNote(id) { S.notes = S.notes.filter(n => n.id !== id); save(); renderNotes(); }
+
+function renderNotes() {
+  const el = document.getElementById('nl2');
+  if (!S.notes.length) { el.innerHTML = '<div class="es">No notes yet</div>'; return; }
+  el.innerHTML = S.notes.map(n => `
+    <div class="nc" onclick="">
+      <div style="display:flex;justify-content:space-between">
+        <div class="nt2">${n.title}</div>
+        <button onclick="delNote('${n.id}')" style="background:transparent;border:none;cursor:pointer;color:var(--t3);font-size:13px">✕</button>
+      </div>
+      <div class="np">${n.body}</div>
+      <div class="nm">${fmtDate(n.created)}</div>
+    </div>`).join('');
+}
+
+// ── REMINDERS ────────────────────────────────────────────────────────────────
+function openRemMo() { openMo('mo-rem'); }
+
+function saveRem() {
+  const t = document.getElementById('rm-t').value.trim();
+  const d = document.getElementById('rm-d').value;
+  const tag = document.getElementById('rm-tag').value;
+  if (!t) return;
+  S.reminders.unshift({id:uid(), title:t, dt:d, tag, done:false});
+  document.getElementById('rm-t').value = ''; document.getElementById('rm-d').value = '';
+  save(); renderReminders(); closeMo('mo-rem'); updateParentStats();
+}
+
+function togRem(id) {
+  const r = S.reminders.find(x => x.id === id);
+  if (r) { r.done = !r.done; save(); renderReminders(); updateParentStats(); }
+}
+
+function renderReminders() {
+  const el = document.getElementById('rl');
+  const tagMap = {work:'rpu',health:'rbl',personal:'ram',urgent:'rrd'};
+  const emojiMap = {work:'💼',health:'💊',personal:'😊',urgent:'🚨'};
+  const active = S.reminders.filter(r => !r.done);
+  if (!active.length) { el.innerHTML = '<div class="es">No upcoming reminders</div>'; return; }
+  el.innerHTML = active.map(r => `
+    <div class="ri2">
+      <div class="ric ${tagMap[r.tag]||'rpu'}">${emojiMap[r.tag]||'🔔'}</div>
+      <div class="rct">
+        <div class="rtl">${r.title}</div>
+        ${r.dt ? `<div class="rtm">${fmtDate(r.dt)}</div>` : ''}
+        <span class="rtg t${r.tag==='work'?'w2':r.tag==='health'?'h':r.tag==='personal'?'p':'u'}">${r.tag}</span>
+      </div>
+      <button onclick="togRem('${r.id}')" style="background:transparent;border:none;cursor:pointer;color:var(--ok);font-size:16px">✓</button>
+    </div>`).join('');
+}
+
+// ── CALENDAR ────────────────────────────────────────────────────────────────
+function chMo(dir) {
+  S.calMonth += dir;
+  if (S.calMonth > 11) { S.calMonth = 0; S.calYear++; }
+  if (S.calMonth < 0) { S.calMonth = 11; S.calYear--; }
+  renderCal();
+}
+
+function renderCal() {
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('clbl').textContent = months[S.calMonth] + ' ' + S.calYear;
+  const first = new Date(S.calYear, S.calMonth, 1).getDay();
+  const days = new Date(S.calYear, S.calMonth+1, 0).getDate();
+  const today = new Date();
+  let html = '';
+  for (let i = 0; i < first; i++) html += '<div class="cc om"></div>';
+  for (let d = 1; d <= days; d++) {
+    const isToday = d === today.getDate() && S.calMonth === today.getMonth() && S.calYear === today.getFullYear();
+    const hasRem = S.reminders.some(r => r.dt && new Date(r.dt).getDate() === d && new Date(r.dt).getMonth() === S.calMonth);
+    html += `<div class="cc ${isToday?'td3':''} ${hasRem?'he':''}">${d}</div>`;
+  }
+  document.getElementById('cg').innerHTML = html;
+}
+
+// ── BILLS ────────────────────────────────────────────────────────────────────
+function addBill() {
+  const name = document.getElementById('bill-name').value.trim();
+  const date = document.getElementById('bill-date').value;
+  const amt = parseFloat(document.getElementById('bill-amt').value)||0;
+  if (!name) return;
+  S.bills.push({id:uid(), name, date, amt, paid:false});
+  document.getElementById('bill-name').value = ''; document.getElementById('bill-date').value = ''; document.getElementById('bill-amt').value = '';
+  save(); renderBills();
+}
+
+function togBill(id) {
+  const b = S.bills.find(x => x.id === id);
+  if (b) { b.paid = !b.paid; save(); renderBills(); }
+}
+
+function renderBills() {
+  const el = document.getElementById('bill-list');
+  if (!S.bills.length) { el.innerHTML = '<div class="es">No bills added</div>'; return; }
+  el.innerHTML = S.bills.map(b => `
+    <div class="titem ${b.paid?'dn':''}">
+      <div class="ck ${b.paid?'on':''}" onclick="togBill('${b.id}')">
+        <svg class="cksv" width="10" height="8" viewBox="0 0 10 8"><path d="M1 4l3 3 5-6" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>
+      </div>
+      <span class="tt">${b.name} ${b.date?'· '+fmtDate(b.date):''}</span>
+      ${b.amt ? `<span style="font-size:13px;font-weight:600;color:var(--warn)">₹${b.amt}</span>` : ''}
+    </div>`).join('');
+}
+
+// ── ENERGY ───────────────────────────────────────────────────────────────────
+function logEnergy(level) {
+  const today = new Date().toDateString();
+  S.energy[today] = level;
+  ['low','med','hi'].forEach(l => {
+    const el = document.getElementById('egy-' + l);
+    if (el) el.style.filter = 'grayscale(60%)';
+  });
+  const map = {low:'egy-low', medium:'egy-med', high:'egy-hi'};
+  if (map[level]) document.getElementById(map[level]).style.filter = 'none';
+  save(); renderEnergyChart(); toast('Energy logged!');
+}
+
+function renderEnergyChart() {
+  const el = document.getElementById('energy-chart');
+  if (!el) return;
+  const days = [];
+  for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate()-i); days.push(d); }
+  const lvlMap = {low:1, medium:2, high:3};
+  el.innerHTML = days.map(d => {
+    const key = d.toDateString();
+    const lv = S.energy[key];
+    const h = lv ? lvlMap[lv]*20 : 4;
+    const col = lv === 'high' ? '#34d399' : lv === 'medium' ? '#fbbf24' : lv ? '#f87171' : 'rgba(255,255,255,0.1)';
+    return `<div class="mood-bar" style="height:${h}px;background:${col};flex:1;border-radius:4px 4px 0 0">
+      <div class="mood-bar-label">${['Su','Mo','Tu','We','Th','Fr','Sa'][d.getDay()]}</div></div>`;
+  }).join('');
+}
+
+// ── KID TASKS ────────────────────────────────────────────────────────────────
+function addIT() {
+  const inp = document.getElementById('itinp');
+  const txt = inp.value.trim();
+  if (!txt) return;
+  S.kidTasks.push({id:uid(), text:txt, done:false});
+  inp.value = '';
+  save(); renderKidTasksParent(); renderKidTasks(); updateGameLock();
+}
+
+function togKidTask(id) {
+  const t = S.kidTasks.find(x => x.id === id);
+  if (!t) return;
+  t.done = !t.done;
+  save(); renderKidTasks(); renderKidTasksParent(); updateGameLock();
+  // check all done
+  if (S.kidTasks.length && S.kidTasks.every(t => t.done)) {
+    setTimeout(() => openRewardModal(), 400);
+  }
+}
+
+function renderKidTasks() {
+  const el = document.getElementById('kid-task-list');
+  if (!el) return;
+  if (!S.kidTasks.length) { el.innerHTML = '<div class="es">No tasks yet — check back soon!</div>'; return; }
+  el.innerHTML = S.kidTasks.map(t => `
+    <div class="titem ${t.done?'dn':''}">
+      <div class="ck ${t.done?'on':''}" onclick="togKidTask('${t.id}')">
+        <svg class="cksv" width="10" height="8" viewBox="0 0 10 8"><path d="M1 4l3 3 5-6" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>
+      </div>
+      <span class="tt">${t.text}</span>
+    </div>`).join('');
+  const done = S.kidTasks.filter(t => t.done).length;
+  const pct = S.kidTasks.length ? Math.round(done / S.kidTasks.length * 100) : 0;
+  document.getElementById('kid-prog').style.width = pct + '%';
+  document.getElementById('kid-pct').textContent = pct + '%';
+}
+
+function renderKidTasksParent() {
+  const el = document.getElementById('itl-parent');
+  if (!el) return;
+  if (!S.kidTasks.length) { el.innerHTML = '<div class="es">No tasks assigned yet</div>'; return; }
+  el.innerHTML = S.kidTasks.map(t => `
+    <div class="titem ${t.done?'dn':''}">
+      <div class="ck ${t.done?'on':''}">
+        <svg class="cksv" width="10" height="8" viewBox="0 0 10 8"><path d="M1 4l3 3 5-6" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>
+      </div>
+      <span class="tt">${t.text}</span>
+      <span style="font-size:11px;color:${t.done?'var(--ok)':'var(--t3)'}">${t.done?'Done':'Pending'}</span>
+    </div>`).join('');
+  const done = S.kidTasks.filter(t => t.done).length;
+  const pct = S.kidTasks.length ? Math.round(done/S.kidTasks.length*100) : 0;
+  document.getElementById('ibp').textContent = pct + '%';
+  document.getElementById('itc').textContent = done + ' of ' + S.kidTasks.length + ' done';
+  document.getElementById('ipf2').style.width = pct + '%';
+}
+
+function updateGameLock() {
+  const done = S.kidTasks.filter(t => t.done).length;
+  const total = S.kidTasks.length;
+  const pct = total ? Math.round(done/total*100) : 0;
+  const locked = document.getElementById('game-locked');
+  const unlocked = document.getElementById('game-unlocked');
+  const prog = document.getElementById('game-prog');
+  const pctEl = document.getElementById('game-pct');
+  if (locked) locked.style.display = (pct < 100 || !total) ? 'block' : 'none';
+  if (unlocked) unlocked.style.display = (pct >= 100 && total > 0) ? 'block' : 'none';
+  if (prog) prog.style.width = pct + '%';
+  if (pctEl) pctEl.textContent = pct + '%';
+}
+
+// ── REWARD ───────────────────────────────────────────────────────────────────
+function selR(el, emoji, name, sub, val) {
+  document.querySelectorAll('.ro').forEach(r => r.classList.remove('on'));
+  el.classList.add('on');
+  S.reward = {emoji, name, sub, val};
+}
+
+function setCustomR() {
+  const name = document.getElementById('crn').value.trim();
+  const emoji = document.getElementById('cre').value.trim() || '🎁';
+  const val = parseInt(document.getElementById('crv').value) || 1000;
+  if (!name) return;
+  S.reward = {emoji, name, sub:'Up to ₹'+val, val};
+  document.querySelectorAll('.ro').forEach(r => r.classList.remove('on'));
+  toast('Custom reward set!');
+}
+
+function saveReward() {
+  save(); updateKidReward(); toast('Reward saved! ✓');
+}
+
+function updateKidReward() {
+  document.getElementById('kid-reward-emoji').textContent = S.reward.emoji;
+  document.getElementById('kid-reward-name').textContent = S.reward.name;
+  document.getElementById('kid-reward-sub').textContent = 'Budget: ₹' + S.reward.val;
+  document.getElementById('rpe').textContent = S.reward.emoji;
+  document.getElementById('rpn').textContent = S.reward.name;
+  document.getElementById('rps').textContent = 'Budget: ₹' + S.reward.val;
+}
+
+function openRewardModal() {
+  document.getElementById('rmn').textContent = S.reward.name + ' ' + S.reward.emoji;
+  document.getElementById('rmsb').textContent = 'Up to ₹' + S.reward.val;
+  document.getElementById('hck').classList.remove('on');
+  document.getElementById('clbtn').disabled = true;
+  document.getElementById('bibtn').disabled = true;
+  openMo('mo-reward');
+  confetti();
+}
+
+let honourChecked = false;
+function togHonour() {
+  honourChecked = !honourChecked;
+  document.getElementById('hck').classList.toggle('on', honourChecked);
+  document.getElementById('clbtn').disabled = !honourChecked;
+  document.getElementById('bibtn').disabled = !honourChecked;
+}
+
+function claimNow() {
+  toast('Parents notified! Reward claim sent 🎉', 'ok');
+  closeMo('mo-reward');
+  S.kidTasks.forEach(t => t.done = false);
+  save(); renderKidTasks(); renderKidTasksParent(); updateGameLock();
+}
+
+function bankIt() {
+  const amt = S.reward.val;
+  S.bank += amt; S.bankTotalEarned += amt;
+  S.bankTxs.unshift({id:uid(), label:'Reward banked: '+S.reward.name, amt, type:'in', date:Date.now()});
+  save(); renderKidBank(); renderBank();
+  closeMo('mo-reward');
+  toast('₹' + amt + ' banked! 🐷', 'ok');
+  S.kidTasks.forEach(t => t.done = false);
+  save(); renderKidTasks(); renderKidTasksParent(); updateGameLock();
+}
+
+// ── BANK ─────────────────────────────────────────────────────────────────────
+function renderKidBank() {
+  document.getElementById('kid-bal').textContent = S.bank;
+  renderTxList('kid-txl');
+  if (S.savingsGoal) {
+    document.getElementById('kid-sg-section').style.display = 'block';
+    document.getElementById('sg-name').textContent = S.savingsGoal.name;
+    document.getElementById('sg-current').textContent = S.bank;
+    document.getElementById('sg-target').textContent = S.savingsGoal.target;
+    const pct = Math.min(100, Math.round(S.bank/S.savingsGoal.target*100));
+    document.getElementById('sg-fill').style.width = pct + '%';
+  }
+}
+
+function renderBank() {
+  document.getElementById('bbd').textContent = S.bank;
+  document.getElementById('bte').textContent = S.bankTotalEarned;
+  document.getElementById('btw').textContent = S.bankTotalWithdrawn;
+  document.getElementById('btp').textContent = S.pendingApprovals.reduce((a,b) => a+b.amt, 0);
+  document.getElementById('ibs').textContent = S.bank;
+  renderTxList('txl');
+  renderPending();
+}
+
+function renderTxList(elId) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  if (!S.bankTxs.length) { el.innerHTML = '<div class="es">No transactions yet</div>'; return; }
+  el.innerHTML = S.bankTxs.slice(0,10).map(t => `
+    <div class="ti2">
+      <div class="tic ${t.type==='in'?'tin':'tout'}">${t.type==='in'?'↑':'↓'}</div>
+      <div class="tit"><div class="titl">${t.label}</div><div class="titm">${fmtDate(t.date)}</div></div>
+      <div class="tia ${t.type}">${t.type==='in'?'+':'-'}₹${t.amt}</div>
+    </div>`).join('');
+}
+
+function renderPending() {
+  const el = document.getElementById('psec');
+  const pl = document.getElementById('pl2');
+  if (!el || !pl) return;
+  el.style.display = S.pendingApprovals.length ? 'block' : 'none';
+  pl.innerHTML = S.pendingApprovals.map(p => `
+    <div class="api">
+      <div class="aph"><span class="apt">${p.label}</span><span class="apa">₹${p.amt}</span></div>
+      <div class="apac">
+        <button class="appr" onclick="approveWD('${p.id}')">✓ Approve</button>
+        <button class="aprj" onclick="rejectWD('${p.id}')">✕ Reject</button>
+      </div>
+    </div>`).join('');
+}
+
+function openWD() { document.getElementById('wdav').textContent = S.bank; openMo('mo-wd'); }
+
+function subWD() {
+  const amt = parseInt(document.getElementById('wdamt').value)||0;
+  const reason = document.getElementById('wdreason').value.trim() || 'Withdrawal';
+  if (amt <= 0 || amt > S.bank) { toast('Invalid amount', 'err'); return; }
+  S.pendingApprovals.push({id:uid(), label:'Withdraw: '+reason, amt, date:Date.now()});
+  document.getElementById('wdamt').value = ''; document.getElementById('wdreason').value = '';
+  save(); renderBank(); closeMo('mo-wd'); toast('Request sent to parents!', 'ok');
+}
+
+function approveWD(id) {
+  const p = S.pendingApprovals.find(x => x.id === id);
+  if (!p) return;
+  S.bank -= p.amt; S.bankTotalWithdrawn += p.amt;
+  S.bankTxs.unshift({id:uid(), label:p.label, amt:p.amt, type:'out', date:Date.now()});
+  S.pendingApprovals = S.pendingApprovals.filter(x => x.id !== id);
+  save(); renderBank(); renderKidBank();
+  showApprovalBanner('Withdrawal of ₹'+p.amt+' approved! 🎉');
+  toast('Approved ✓', 'ok');
+}
+
+function rejectWD(id) {
+  S.pendingApprovals = S.pendingApprovals.filter(x => x.id !== id);
+  save(); renderBank(); toast('Rejected', 'err');
+}
+
+function openCA() { openMo('mo-ca'); }
+
+function subCA() {
+  const name = document.getElementById('can').value.trim();
+  const amt = parseInt(document.getElementById('caa').value)||0;
+  if (!name || amt <= 0) return;
+  subAch('✨', name, amt);
+  document.getElementById('can').value = ''; document.getElementById('caa').value = '';
+  closeMo('mo-ca');
+}
+
+function subAch(emoji, label, amt) {
+  S.pendingApprovals.push({id:uid(), label: emoji + ' ' + label, amt, date:Date.now()});
+  save(); renderBank(); toast('Achievement submitted! Parents will approve.', 'ok');
+}
+
+function showApprovalBanner(msg) {
+  const b = document.getElementById('abanner');
+  document.getElementById('abanner-text').textContent = msg;
+  b.classList.add('show');
+  setTimeout(() => b.classList.remove('show'), 4000);
+}
+
+// ── PIN LOCK ─────────────────────────────────────────────────────────────────
+function unlockWA() {
+  const pin = document.getElementById('wapi').value;
+  if (pin === S.parentPIN) {
+    document.getElementById('wal2').style.display = 'none';
+    document.getElementById('wau').style.display = 'block';
+    document.getElementById('wan1').value = S.email1 || '';
+    document.getElementById('wan2').value = S.email2 || '';
+  } else {
+    document.getElementById('wape').style.display = 'block';
+    setTimeout(() => document.getElementById('wape').style.display='none', 2000);
+  }
+}
+
+function lockWA() {
+  document.getElementById('wal2').style.display = 'block';
+  document.getElementById('wau').style.display = 'none';
+  document.getElementById('wapi').value = '';
+}
+
+function saveWA() {
+  S.email1 = document.getElementById('wan1').value.trim();
+  S.email2 = document.getElementById('wan2').value.trim();
+  save(); toast('Settings saved ✓', 'ok');
+}
+
+function savePIN() {
+  const p = document.getElementById('npi').value.trim();
+  if (p.length < 4) { toast('PIN must be 4-6 digits', 'err'); return; }
+  S.parentPIN = p; save();
+  document.getElementById('npi').value = '';
+  toast('PIN updated ✓', 'ok');
+}
+
+function unlockPC() {
+  const pin = document.getElementById('pcpi').value;
+  if (pin === S.parentPIN) {
+    document.getElementById('pcl').style.display = 'none';
+    document.getElementById('pcu').style.display = 'block';
+  } else {
+    document.getElementById('pcpe').style.display = 'block';
+    setTimeout(() => document.getElementById('pcpe').style.display='none', 2000);
+  }
+}
+
+function lockPC() {
+  document.getElementById('pcl').style.display = 'block';
+  document.getElementById('pcu').style.display = 'none';
+  document.getElementById('pcpi').value = '';
+}
+
+function resetWeek() {
+  if (!confirm('Reset all kid tasks for a new week?')) return;
+  S.kidTasks.forEach(t => t.done = false);
+  save(); renderKidTasks(); renderKidTasksParent(); updateGameLock(); toast('Week reset!', 'ok');
+}
+
+// ── MOOD ─────────────────────────────────────────────────────────────────────
+function selMood(mood, emoji) {
+  S.selectedMood = {mood, emoji};
+  document.querySelectorAll('.me').forEach(e => e.classList.remove('selected'));
+  document.querySelector(`[data-mood="${mood}"]`).classList.add('selected');
+}
+
+function togMoodCat(el, cat) {
+  el.classList.toggle('on');
+  if (!S.moodCats) S.moodCats = [];
+  if (S.moodCats.includes(cat)) S.moodCats = S.moodCats.filter(c => c !== cat);
+  else S.moodCats.push(cat);
+}
+
+function saveMood() {
+  if (!S.selectedMood) { toast('Pick a mood first!', 'err'); return; }
+  const today = new Date().toDateString();
+  const note = document.getElementById('mood-note').value.trim();
+  S.mood[today] = {mood: S.selectedMood.mood, emoji: S.selectedMood.emoji, cats: S.moodCats||[], note, date: Date.now()};
+  S.selectedMood = null; S.moodCats = [];
+  document.querySelectorAll('.me').forEach(e => e.classList.remove('selected'));
+  document.querySelectorAll('.mcat').forEach(e => e.classList.remove('on'));
+  document.getElementById('mood-note').value = '';
+  save(); renderMoodCalKid(); renderParentMood(); toast('Mood saved! 😊', 'ok');
+}
+
+function renderMoodCalKid() {
+  const el = document.getElementById('mood-calendar-kid');
+  if (!el) return;
+  const days = [];
+  for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate()-i); days.push(d); }
+  el.innerHTML = days.map(d => {
+    const key = d.toDateString();
+    const m = S.mood[key];
+    const isToday = d.toDateString() === new Date().toDateString();
+    return `<div class="mood-day ${isToday?'today-mood':''}" style="background:${m?'rgba(124,110,247,0.15)':''}">
+      ${m ? m.emoji : ''}
+      <div class="day-num">${d.getDate()}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderParentMood() {
+  const calEl = document.getElementById('mood-calendar-parent');
+  const chartEl = document.getElementById('mood-chart-parent');
+  const labelsEl = document.getElementById('mood-chart-labels');
+  const entriesEl = document.getElementById('mood-entries-parent');
+  if (!calEl) return;
+  const days = [];
+  for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate()-i); days.push(d); }
+  calEl.innerHTML = days.map(d => {
+    const key = d.toDateString();
+    const m = S.mood[key];
+    return `<div class="mood-day" style="background:${m?'rgba(124,110,247,0.15)':''}">
+      ${m ? m.emoji : ''}
+      <div class="day-num">${d.getDate()}</div>
+    </div>`;
+  }).join('');
+  const lvl = {great:5,good:4,ok:3,low:2,sad:1};
+  const cols = {great:'#34d399',good:'#7c6ef7',ok:'#fbbf24',low:'#f87171',sad:'#ef4444'};
+  if (chartEl) chartEl.innerHTML = days.map(d => {
+    const m = S.mood[d.toDateString()];
+    const h = m ? (lvl[m.mood]||3)*10 : 4;
+    return `<div class="mood-bar" style="height:${h}px;background:${m?cols[m.mood]:'rgba(255,255,255,0.1)'};flex:1;border-radius:4px 4px 0 0">
+      <div class="mood-bar-label">${['Su','Mo','Tu','We','Th','Fr','Sa'][d.getDay()]}</div></div>`;
+  }).join('');
+  if (labelsEl) labelsEl.innerHTML = days.map(d => `<span>${['Su','Mo','Tu','We','Th','Fr','Sa'][d.getDay()]}</span>`).join('');
+  if (entriesEl) {
+    const entries = Object.entries(S.mood).sort((a,b) => b[1].date - a[1].date).slice(0,5);
+    entriesEl.innerHTML = entries.length ? entries.map(([k,m]) => `
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--gb)">
+        <span style="font-size:22px">${m.emoji}</span>
+        <div>
+          <div style="font-size:13px;font-weight:500;text-transform:capitalize">${m.mood}</div>
+          <div style="font-size:11px;color:var(--t3)">${fmtDate(m.date)} ${m.cats&&m.cats.length ? '· '+m.cats.join(', ') : ''}</div>
+          ${m.note ? `<div style="font-size:12px;color:var(--t2);margin-top:2px">${m.note}</div>` : ''}
+        </div>
+      </div>`).join('') : '<div class="es">No mood entries yet</div>';
+  }
+}
+
+// ── SAVINGS GOAL ─────────────────────────────────────────────────────────────
+function setSavingsGoal() {
+  const name = document.getElementById('sg-name-inp').value.trim();
+  const target = parseInt(document.getElementById('sg-amt-inp').value)||0;
+  if (!name || target <= 0) { toast('Fill in goal name and amount', 'err'); return; }
+  S.savingsGoal = {name, target};
+  document.getElementById('sg-name-inp').value = ''; document.getElementById('sg-amt-inp').value = '';
+  save(); renderKidBank(); toast('Savings goal set! 🎯', 'ok');
+}
+
+// ── PHOTOS ───────────────────────────────────────────────────────────────────
+function handlePhoto(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    // Compress to max 400px wide to keep under Firestore limits
+    const img = new Image();
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      const maxW = 400;
+      const ratio = Math.min(1, maxW / img.width);
+      canvas.width = img.width * ratio;
+      canvas.height = img.height * ratio;
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      window._pendingPhoto = canvas.toDataURL('image/jpeg', 0.7);
+      document.getElementById('photo-preview-img').src = window._pendingPhoto;
+      document.getElementById('photo-preview').style.display = 'block';
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function savePhoto() {
+  if (!window._pendingPhoto) { toast('Take a photo first!', 'err'); return; }
+  const caption = document.getElementById('photo-caption').value.trim();
+  const mood = S.selectedMood ? S.selectedMood.emoji : '😊';
+  S.photos.unshift({id:uid(), src:window._pendingPhoto, caption, mood, date:Date.now()});
+  window._pendingPhoto = null;
+  document.getElementById('photo-preview').style.display = 'none';
+  document.getElementById('photo-preview-img').src = '';
+  document.getElementById('photo-caption').value = '';
+  save(); renderPhotos(); toast('Photo saved! 📸', 'ok');
+}
+
+function renderPhotos() {
+  const kidEl = document.getElementById('kid-photo-grid');
+  const parEl = document.getElementById('parent-photo-grid');
+  const html = S.photos.map(p => `
+    <div class="photo-item" onclick="viewPhoto('${p.id}')">
+      <img src="${p.src}" alt="${p.caption||''}"/>
+      <div class="photo-date">${fmtDate(p.date)}</div>
+      <div class="mood-overlay">${p.mood||''}</div>
+    </div>`).join('');
+  if (kidEl) kidEl.innerHTML = html || '<div class="es">No photos yet</div>';
+  if (parEl) parEl.innerHTML = html || '<div class="es">No photos yet</div>';
+}
+
+function viewPhoto(id) {
+  const p = S.photos.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('modal-photo-img').src = p.src;
+  document.getElementById('modal-photo-caption').textContent = p.caption || '';
+  document.getElementById('modal-photo-date').textContent = fmtDate(p.date);
+  document.getElementById('modal-photo-mood').textContent = p.mood || '';
+  openMo('mo-photo');
+}
+
+// ── BOOKS ────────────────────────────────────────────────────────────────────
+function setBookRating(r) { S.bookRating = r; renderStars(); }
+function renderStars() {
+  document.querySelectorAll('#book-rating-stars .star').forEach((s,i) => {
+    s.style.filter = i < S.bookRating ? 'none' : 'grayscale(80%)';
+  });
+}
+
+function addBook() {
+  const title = document.getElementById('book-title-inp').value.trim();
+  const author = document.getElementById('book-author').value.trim();
+  if (!title) return;
+  S.books.unshift({id:uid(), title, author, rating:S.bookRating, date:Date.now()});
+  document.getElementById('book-title-inp').value = ''; document.getElementById('book-author').value = '';
+  S.bookRating = 0; renderStars();
+  save(); renderBooks(); toast('Book added! 📚', 'ok');
+}
+
+function renderBooks() {
+  const el = document.getElementById('book-list');
+  if (!el) return;
+  if (!S.books.length) { el.innerHTML = '<div class="es">No books yet — add your first one!</div>'; return; }
+  el.innerHTML = S.books.map(b => `
+    <div class="book-item">
+      <div class="book-cover">📖</div>
+      <div class="book-info">
+        <div class="book-title">${b.title}</div>
+        ${b.author ? `<div class="book-meta">by ${b.author}</div>` : ''}
+        <div class="book-stars">${'⭐'.repeat(b.rating||0)}</div>
+      </div>
+      <div style="font-size:11px;color:var(--t3)">${fmtDate(b.date)}</div>
+    </div>`).join('');
+}
+
+// ── GROCERY ──────────────────────────────────────────────────────────────────
+function addGrocery() {
+  const inp = document.getElementById('groc-inp');
+  const who = document.getElementById('groc-who').value;
+  const txt = inp.value.trim();
+  if (!txt) return;
+  S.grocery.push({id:uid(), text:txt, who, done:false});
+  inp.value = '';
+  save(); renderGrocery();
+}
+
+function togGrocery(id) {
+  const g = S.grocery.find(x => x.id === id);
+  if (g) { g.done = !g.done; save(); renderGrocery(); }
+}
+
+function renderGrocery() {
+  const el = document.getElementById('grocery-list');
+  if (!el) return;
+  if (!S.grocery.length) { el.innerHTML = '<div class="es">List is empty</div>'; return; }
+  const whoMap = {family:'👨‍👩‍👦',me:'👤',ishaan:'⭐'};
+  el.innerHTML = S.grocery.map(g => `
+    <div class="titem ${g.done?'dn':''}">
+      <div class="ck ${g.done?'on':''}" onclick="togGrocery('${g.id}')">
+        <svg class="cksv" width="10" height="8" viewBox="0 0 10 8"><path d="M1 4l3 3 5-6" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>
+      </div>
+      <span class="tt">${g.text}</span>
+      <span class="fam-who">${whoMap[g.who]||''} ${g.who}</span>
+    </div>`).join('');
+}
+
+// ── FAM GOALS ────────────────────────────────────────────────────────────────
+function addFamGoal() {
+  const inp = document.getElementById('goal-inp');
+  const date = document.getElementById('goal-date').value;
+  const txt = inp.value.trim();
+  if (!txt) return;
+  S.famGoals.push({id:uid(), text:txt, date, done:false});
+  inp.value = ''; document.getElementById('goal-date').value = '';
+  save(); renderFamGoals();
+}
+
+function togFamGoal(id) {
+  const g = S.famGoals.find(x => x.id === id);
+  if (g) { g.done = !g.done; save(); renderFamGoals(); }
+}
+
+function renderFamGoals() {
+  const el = document.getElementById('goal-list');
+  if (!el) return;
+  if (!S.famGoals.length) { el.innerHTML = '<div class="es">No goals yet</div>'; return; }
+  el.innerHTML = S.famGoals.map(g => `
+    <div class="titem ${g.done?'dn':''}">
+      <div class="ck ${g.done?'on':''}" onclick="togFamGoal('${g.id}')">
+        <svg class="cksv" width="10" height="8" viewBox="0 0 10 8"><path d="M1 4l3 3 5-6" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>
+      </div>
+      <span class="tt">${g.text}</span>
+      ${g.date ? `<span style="font-size:11px;color:var(--t3)">${fmtDate(g.date)}</span>` : ''}
+    </div>`).join('');
+}
+
+// ── MODALS ───────────────────────────────────────────────────────────────────
+function openMo(id) { document.getElementById(id).classList.add('on'); }
+function closeMo(id) { document.getElementById(id).classList.remove('on'); }
+
+// ── CONFETTI ─────────────────────────────────────────────────────────────────
+function confetti() {
+  const c = document.getElementById('confetti-container');
+  c.innerHTML = '';
+  const colors = ['#7c6ef7','#38bdf8','#34d399','#fbbf24','#f87171','#a78bfa'];
+  for (let i = 0; i < 60; i++) {
+    const p = document.createElement('div');
+    p.className = 'cp';
+    p.style.cssText = `left:${Math.random()*100}vw;background:${colors[Math.floor(Math.random()*colors.length)]};animation-delay:${Math.random()*1.5}s;animation-duration:${2+Math.random()*2}s;width:${6+Math.random()*8}px;height:${6+Math.random()*8}px`;
+    c.appendChild(p);
+  }
+  setTimeout(() => c.innerHTML = '', 5000);
+}
+
+// ── GAMES ────────────────────────────────────────────────────────────────────
+function showGame(id) {
+  ['picker','quiz','snake'].forEach(g => {
+    const el = document.getElementById('game-'+g);
+    if (el) el.style.display = g === id ? 'block' : 'none';
+  });
+  if (id === 'quiz') startQuiz();
+  if (id === 'snake') stopSnake();
+}
+
+// Quiz
+const quizQs = [
+  {q:"What is 8 × 7?", opts:["54","56","58","52"], ans:1},
+  {q:"Which planet is closest to the Sun?", opts:["Venus","Earth","Mercury","Mars"], ans:2},
+  {q:"What is the capital of France?", opts:["Berlin","Madrid","Paris","Rome"], ans:2},
+  {q:"How many sides does a hexagon have?", opts:["5","6","7","8"], ans:1},
+  {q:"What is the largest ocean?", opts:["Atlantic","Indian","Arctic","Pacific"], ans:3},
+  {q:"What is 144 ÷ 12?", opts:["10","11","12","13"], ans:2},
+  {q:"Which gas do plants absorb?", opts:["Oxygen","Nitrogen","Carbon Dioxide","Hydrogen"], ans:2},
+  {q:"How many days in a leap year?", opts:["364","365","366","367"], ans:2},
+  {q:"What colour do you get mixing red and blue?", opts:["Green","Purple","Orange","Brown"], ans:1},
+  {q:"What is the square root of 81?", opts:["7","8","9","10"], ans:2},
+];
+let qIdx=0, qScore=0, qTimer=null, qUsed=[];
+
+function startQuiz() {
+  document.getElementById('quiz-result').style.display = 'none';
+  document.getElementById('quiz-area').style.display = 'block';
+  qIdx=0; qScore=0; qUsed=[];
+  document.getElementById('quiz-score').textContent = 0;
+  nextQ();
+}
+
+function nextQ() {
+  clearInterval(qTimer);
+  if (qIdx >= 10) { showResult(); return; }
+  const q = quizQs[qIdx % quizQs.length];
+  document.getElementById('quiz-question').textContent = q.q;
+  document.getElementById('quiz-qnum').textContent = (qIdx+1)+'/10';
+  document.getElementById('quiz-feedback').style.display = 'none';
+  let t = 15;
+  document.getElementById('quiz-timer').textContent = t;
+  document.getElementById('quiz-options').innerHTML = q.opts.map((o,i) => `
+    <button onclick="answerQ(${i})" style="background:rgba(255,255,255,0.06);border:1px solid var(--gb);border-radius:10px;padding:10px 14px;color:var(--t1);font-size:14px;cursor:pointer;text-align:left;transition:all 0.15s"
+      onmouseover="this.style.background='rgba(124,110,247,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">${o}</button>`).join('');
+  qTimer = setInterval(() => {
+    t--;
+    document.getElementById('quiz-timer').textContent = t;
+    if (t <= 0) { clearInterval(qTimer); answerQ(-1); }
+  }, 1000);
+}
+
+function answerQ(i) {
+  clearInterval(qTimer);
+  const q = quizQs[qIdx % quizQs.length];
+  const btns = document.getElementById('quiz-options').querySelectorAll('button');
+  btns.forEach((b,j) => { b.disabled=true; b.style.background = j===q.ans?'rgba(52,211,153,0.2)':j===i?'rgba(248,113,113,0.2)':''; });
+  const fb = document.getElementById('quiz-feedback');
+  if (i === q.ans) { qScore++; fb.textContent='✓ Correct! +1'; fb.style.background='rgba(52,211,153,0.15)'; fb.style.color='#34d399'; }
+  else { fb.textContent = i===-1 ? '⏱ Time up! The answer was: '+q.opts[q.ans] : '✗ Wrong! Answer: '+q.opts[q.ans]; fb.style.background='rgba(248,113,113,0.1)'; fb.style.color='#f87171'; }
+  fb.style.display='block';
+  document.getElementById('quiz-score').textContent = qScore;
+  qIdx++;
+  setTimeout(nextQ, 1800);
+}
+
+function showResult() {
+  document.getElementById('quiz-area').style.display = 'none';
+  document.getElementById('quiz-result').style.display = 'block';
+  document.getElementById('result-score').textContent = 'You scored '+qScore+'/10';
+  if (qScore >= 8) { document.getElementById('result-emoji').textContent='🏆'; document.getElementById('result-title').textContent='Brilliant!'; document.getElementById('result-msg').textContent='You are a quiz master!'; }
+  else if (qScore >= 5) { document.getElementById('result-emoji').textContent='😊'; document.getElementById('result-title').textContent='Good job!'; document.getElementById('result-msg').textContent='Keep practising!'; }
+  else { document.getElementById('result-emoji').textContent='💪'; document.getElementById('result-title').textContent='Keep trying!'; document.getElementById('result-msg').textContent='Practice makes perfect.'; }
+}
+
+// Snake
+let snakeGame=null, snake=[], snakeDir={x:1,y:0}, snakeFood={x:5,y:5}, snakeScore=0, snakeBest=0, snakeRunning=false;
+const CELL=15, COLS=20, ROWS=20;
+
+function startSnake() {
+  const canvas = document.getElementById('snake-canvas');
+  if (!canvas) return;
+  canvas.width = COLS*CELL; canvas.height = ROWS*CELL;
+  snake = [{x:10,y:10},{x:9,y:10},{x:8,y:10}];
+  snakeDir = {x:1,y:0};
+  snakeScore = 0;
+  placeFood();
+  document.getElementById('snake-score').textContent = 0;
+  document.getElementById('snake-msg').textContent = 'Use arrow keys or buttons!';
+  document.getElementById('snake-start-btn').textContent = '🔄 Restart';
+  if (snakeGame) clearInterval(snakeGame);
+  snakeRunning = true;
+  snakeGame = setInterval(tickSnake, 150);
+  document.onkeydown = e => {
+    if (e.key==='ArrowUp') setSnakeDir(0,-1);
+    if (e.key==='ArrowDown') setSnakeDir(0,1);
+    if (e.key==='ArrowLeft') setSnakeDir(-1,0);
+    if (e.key==='ArrowRight') setSnakeDir(1,0);
+  };
+}
+
+function stopSnake() { clearInterval(snakeGame); snakeRunning=false; document.onkeydown=null; }
+
+function setSnakeDir(x,y) {
+  if (x===1&&snakeDir.x===-1) return; if (x===-1&&snakeDir.x===1) return;
+  if (y===1&&snakeDir.y===-1) return; if (y===-1&&snakeDir.y===1) return;
+  snakeDir={x,y};
+}
+
+function placeFood() {
+  do { snakeFood = {x:Math.floor(Math.random()*COLS), y:Math.floor(Math.random()*ROWS)}; }
+  while (snake.some(s => s.x===snakeFood.x && s.y===snakeFood.y));
+}
+
+function tickSnake() {
+  const head = {x: snake[0].x + snakeDir.x, y: snake[0].y + snakeDir.y};
+  if (head.x<0||head.x>=COLS||head.y<0||head.y>=ROWS||snake.some(s=>s.x===head.x&&s.y===head.y)) {
+    clearInterval(snakeGame); snakeRunning=false;
+    document.getElementById('snake-msg').textContent = 'Game over! Score: '+snakeScore;
+    if (snakeScore>snakeBest) { snakeBest=snakeScore; document.getElementById('snake-best').textContent=snakeBest; }
+    return;
+  }
+  snake.unshift(head);
+  if (head.x===snakeFood.x && head.y===snakeFood.y) { snakeScore++; document.getElementById('snake-score').textContent=snakeScore; placeFood(); }
+  else snake.pop();
+  drawSnake();
+}
+
+function drawSnake() {
+  const canvas = document.getElementById('snake-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#0a0d1a'; ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle = '#f87171'; ctx.fillRect(snakeFood.x*CELL+1,snakeFood.y*CELL+1,CELL-2,CELL-2);
+  snake.forEach((s,i) => {
+    ctx.fillStyle = i===0?'#7c6ef7':'#a78bfa';
+    ctx.fillRect(s.x*CELL+1,s.y*CELL+1,CELL-2,CELL-2);
+  });
+}
+
+// ── EXPOSE ALL FUNCTIONS TO WINDOW (required for type="module") ──────────────
+const _expose = [
+  'loginAs','doSignOut','goPg','goKidPg','goTab','goFamTab',
+  'addTask','togTask','delTask',
+  'addHabit','togHabit',
+  'openNote','closeNote','saveNote','delNote',
+  'openRemMo','saveRem','togRem','chMo',
+  'addBill','togBill',
+  'logEnergy',
+  'addIT','togKidTask','resetWeek',
+  'selR','setCustomR','saveReward','openRewardModal','togHonour','claimNow','bankIt',
+  'openWD','subWD','approveWD','rejectWD','openCA','subCA','subAch',
+  'unlockWA','lockWA','saveWA','savePIN','unlockPC','lockPC',
+  'selMood','togMoodCat','saveMood',
+  'setSavingsGoal',
+  'handlePhoto','savePhoto','viewPhoto',
+  'setBookRating','addBook',
+  'addGrocery','togGrocery',
+  'addFamGoal','togFamGoal',
+  'openMo','closeMo',
+  'showGame','startQuiz','answerQ',
+  'startSnake','stopSnake','setSnakeDir',
+];
+_expose.forEach(fn => { if (typeof window[fn] === 'undefined') try { window[fn] = eval(fn); } catch(e){} });
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+document.getElementById('ls').style.display = 'flex';
+document.getElementById('db-parent').style.display = 'none';
+document.getElementById('db-kid').style.display = 'none';
+
+// Show a loading state on the buttons while we connect
+const btns = document.querySelectorAll('#ls button');
+btns.forEach(b => { b.disabled = true; b.style.opacity = '0.6'; });
+
+load().then(() => {
+  btns.forEach(b => { b.disabled = false; b.style.opacity = '1'; });
+  startSync();
+}).catch(() => {
+  btns.forEach(b => { b.disabled = false; b.style.opacity = '1'; });
+});
+</script>
+</body>
+</html>
